@@ -118,37 +118,23 @@ export const Tool2PdfToOcr: React.FC = () => {
   const activePage = result?.pages ? result.pages[selectedPageIdx] : null;
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
-      {/* Tool Header */}
-      <div className="bg-[#17171a] p-6 rounded-2xl border border-[#24242a] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold mb-2">
-            <FileText className="h-3.5 w-3.5" />
-            WORKFLOW 2 — PDF TO STRUCTURED OCR
-          </div>
-          <h2 className="text-xl font-bold text-white">Ekstraksi Teks, Tabel & Grafik Terstruktur dari PDF</h2>
-          <p className="text-slate-400 text-xs mt-1">
-            Menjalankan engine OCR lokal 100% offline untuk mengekstrak judul, paragraf, tabel, dan grafik tanpa halusinasi.
-          </p>
-        </div>
-      </div>
-
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Workflow Step Progress Bar */}
-      <div className="bg-[#17171a] p-3 rounded-2xl border border-[#24242a]">
+      <div className="bg-[#17171a] p-3 rounded-xl border border-[#24242a]">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-xs">
-          <div className={`p-2 rounded-xl border transition-all ${activeStep === 1 ? "bg-cyan-500/10 border-cyan-500/30 text-white font-semibold" : activeStep > 1 ? "bg-[#1c1c20] border-[#28282e] text-emerald-400" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 1 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 1 ? "bg-[#1c1c20] border-[#24242a] text-emerald-400" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>1. Unggah PDF</span>
           </div>
-          <div className={`p-2 rounded-xl border transition-all ${activeStep === 2 ? "bg-cyan-500/10 border-cyan-500/30 text-white font-semibold" : activeStep > 2 ? "bg-[#1c1c20] border-[#28282e] text-emerald-400" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 2 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 2 ? "bg-[#1c1c20] border-[#24242a] text-emerald-400" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>2. Baca Halaman</span>
           </div>
-          <div className={`p-2 rounded-xl border transition-all ${activeStep === 3 ? "bg-cyan-500/10 border-cyan-500/30 text-white font-semibold" : activeStep > 3 ? "bg-[#1c1c20] border-[#28282e] text-emerald-400" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 3 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 3 ? "bg-[#1c1c20] border-[#24242a] text-emerald-400" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>3. Ekstrak Teks</span>
           </div>
-          <div className={`p-2 rounded-xl border transition-all ${activeStep === 4 ? "bg-cyan-500/10 border-cyan-500/30 text-white font-semibold" : activeStep > 4 ? "bg-[#1c1c20] border-[#28282e] text-emerald-400" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 4 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 4 ? "bg-[#1c1c20] border-[#24242a] text-emerald-400" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>4. Analisis Grafik</span>
           </div>
-          <div className={`p-2 rounded-xl border transition-all ${activeStep === 5 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 5 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-medium" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>5. Selesai</span>
           </div>
         </div>
@@ -169,7 +155,7 @@ export const Tool2PdfToOcr: React.FC = () => {
 
       {/* Main Upload Section */}
       <div className="bg-[#17171a] border border-[#24242a] p-6 rounded-2xl space-y-6">
-        <div className="border-2 border-dashed border-slate-700 hover:border-cyan-500/50 rounded-2xl p-10 text-center transition-all bg-slate-900/40 relative">
+        <div className="border border-dashed border-[#33333d] hover:border-slate-500 rounded-xl p-8 text-center transition-all bg-[#141416] relative">
           <input
             type="file"
             accept="application/pdf"
@@ -177,17 +163,17 @@ export const Tool2PdfToOcr: React.FC = () => {
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div className="flex flex-col items-center gap-3">
-            <div className="h-16 w-16 rounded-2xl bg-cyan-600/20 flex items-center justify-center text-cyan-400">
-              <FileText className="h-8 w-8" />
+            <div className="h-12 w-12 rounded-xl bg-[#222228] flex items-center justify-center text-slate-300 border border-[#2e2e36]">
+              <FileText className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-base font-bold text-slate-200">
+              <p className="text-sm font-medium text-slate-200">
                 {file ? file.name : "Drop your presentation PDF here"}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Supports presentation PDF files up to 200 MB</p>
+              <p className="text-xs text-slate-500 mt-1">Supports presentation PDF files up to 200 MB</p>
             </div>
             {file && (
-              <span className="text-xs font-semibold px-3 py-1 bg-cyan-600/20 border border-cyan-500/30 text-cyan-300 rounded-lg">
+              <span className="text-xs font-medium px-2.5 py-0.5 bg-[#25252b] border border-[#303038] text-slate-300 rounded-md">
                 {(file.size / (1024 * 1024)).toFixed(1)} MB
               </span>
             )}
@@ -196,20 +182,20 @@ export const Tool2PdfToOcr: React.FC = () => {
 
         {/* Pre-processing Summary Card */}
         {file && !isProcessing && status === "idle" && (
-          <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 space-y-3 text-xs text-slate-300">
-            <h4 className="font-bold text-white text-sm">What will happen next:</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="flex items-start gap-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+          <div className="bg-[#141416] p-4 rounded-xl border border-[#26262c] space-y-2 text-xs text-slate-300">
+            <h4 className="font-medium text-white text-xs">Informasi Pemrosesan:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
                 <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Text content & headings will be extracted by local OCR</span>
+                <span>Ekstraksi teks & judul oleh OCR</span>
               </div>
-              <div className="flex items-start gap-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+              <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
                 <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Tables & charts isolated into graphic crop references</span>
+                <span>Isolasi tabel & grafik</span>
               </div>
-              <div className="flex items-start gap-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+              <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
                 <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Non-hallucinated Markdown & JSON outputs generated</span>
+                <span>Output Markdown & JSON</span>
               </div>
             </div>
           </div>
@@ -219,17 +205,17 @@ export const Tool2PdfToOcr: React.FC = () => {
         <button
           onClick={handleStartOcr}
           disabled={!file || isProcessing}
-          className="w-full py-4 px-6 rounded-2xl font-bold text-white bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-cyan-600/30 transition-all flex items-center justify-center gap-2 text-base"
+          className="w-full py-3 px-5 rounded-xl font-medium text-xs text-white bg-[#24242a] hover:bg-[#2d2d34] disabled:opacity-50 disabled:cursor-not-allowed border border-[#33333d] transition-all flex items-center justify-center gap-2"
         >
           {isProcessing ? (
             <>
-              <RefreshCw className="h-5 w-5 animate-spin" />
-              <span>Extracting Information... ({Math.round(progress * 100)}%)</span>
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              <span>Mengekstrak Informasi... ({Math.round(progress * 100)}%)</span>
             </>
           ) : (
             <>
-              <FileText className="h-5 w-5" />
-              <span>Extract Information from PDF</span>
+              <FileText className="h-4 w-4 text-slate-300" />
+              <span>Ekstrak Informasi dari PDF</span>
             </>
           )}
         </button>

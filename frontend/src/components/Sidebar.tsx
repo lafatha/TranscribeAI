@@ -67,13 +67,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center justify-between px-2 pt-1 pb-2">
           {!collapsed && (
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab("dashboard")}>
-              <Mic className="h-5 w-5 text-indigo-400" />
+              <Mic className="h-5 w-5 text-slate-300" />
               <span className="font-semibold text-sm tracking-tight text-white">Transcribe OCR</span>
             </div>
           )}
           {collapsed && (
             <div className="mx-auto cursor-pointer" onClick={() => setActiveTab("dashboard")}>
-              <Mic className="h-5 w-5 text-indigo-400" />
+              <Mic className="h-5 w-5 text-slate-300" />
             </div>
           )}
 
@@ -95,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             collapsed ? "px-0" : "px-3"
           }`}
         >
-          <Plus className="h-4 w-4 text-indigo-400" />
+          <Plus className="h-4 w-4 text-slate-300" />
           {!collapsed && <span>New Job</span>}
         </button>
 
@@ -121,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 : "text-slate-400 hover:text-slate-200 hover:bg-[#1f1f24]"
             }`}
           >
-            <Video className="h-4 w-4 text-indigo-400" />
+            <Video className="h-4 w-4 text-slate-400" />
             {!collapsed && <span>Video → Slide PDF</span>}
           </button>
 
@@ -133,7 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 : "text-slate-400 hover:text-slate-200 hover:bg-[#1f1f24]"
             }`}
           >
-            <FileText className="h-4 w-4 text-cyan-400" />
+            <FileText className="h-4 w-4 text-slate-400" />
             {!collapsed && <span>PDF → Structured OCR</span>}
           </button>
 

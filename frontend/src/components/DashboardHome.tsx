@@ -70,7 +70,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({ onSelectWorkflow }
               onClick={() => onSelectWorkflow("video")}
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#24242a] hover:bg-[#2b2b32] border border-[#303038] text-xs font-medium text-slate-200 transition-colors"
             >
-              <Video className="h-3.5 w-3.5 text-indigo-400" />
+              <Video className="h-3.5 w-3.5 text-slate-400" />
               <span>Video → PDF</span>
             </button>
 
@@ -78,7 +78,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({ onSelectWorkflow }
               onClick={() => onSelectWorkflow("ocr")}
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#24242a] hover:bg-[#2b2b32] border border-[#303038] text-xs font-medium text-slate-200 transition-colors"
             >
-              <FileText className="h-3.5 w-3.5 text-cyan-400" />
+              <FileText className="h-3.5 w-3.5 text-slate-400" />
               <span>PDF → OCR</span>
             </button>
 
@@ -90,11 +90,10 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({ onSelectWorkflow }
               <span>Cari Dokumen</span>
             </button>
           </div>
-
         </div>
       </div>
 
-      {/* Structured Workflow Card List (Inspired by Claude Setup Card) */}
+      {/* Structured Workflow Card List */}
       <div className="bg-[#17171a] border border-[#24242a] rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between text-xs font-medium text-slate-400 border-b border-[#24242a] pb-3">
           <span>Pilihan Alur Kerja Engine</span>
@@ -108,11 +107,11 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({ onSelectWorkflow }
             className="group cursor-pointer flex items-center justify-between p-3.5 rounded-xl bg-[#1c1c20] hover:bg-[#222228] border border-[#26262c] hover:border-[#383842] transition-all"
           >
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+              <div className="h-8 w-8 rounded-lg bg-[#222228] border border-[#2e2e36] flex items-center justify-center text-slate-300">
                 <Video className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="text-xs font-semibold text-white group-hover:text-indigo-300 transition-colors">
+                <h3 className="text-xs font-semibold text-white group-hover:text-slate-200 transition-colors">
                   1. Rekaman Video Layar → Slide PDF Bersih
                 </h3>
                 <p className="text-[11px] text-slate-400 mt-0.5">
@@ -129,11 +128,11 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({ onSelectWorkflow }
             className="group cursor-pointer flex items-center justify-between p-3.5 rounded-xl bg-[#1c1c20] hover:bg-[#222228] border border-[#26262c] hover:border-[#383842] transition-all"
           >
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <div className="h-8 w-8 rounded-lg bg-[#222228] border border-[#2e2e36] flex items-center justify-center text-slate-300">
                 <FileText className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="text-xs font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                <h3 className="text-xs font-semibold text-white group-hover:text-slate-200 transition-colors">
                   2. Document PDF → Ekstraksi Teks, Tabel & Grafik (OCR)
                 </h3>
                 <p className="text-[11px] text-slate-400 mt-0.5">

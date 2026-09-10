@@ -28,37 +28,26 @@ export const LocalSearch: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Search Header Banner */}
-      <div className="bg-[#17171a] p-6 rounded-2xl border border-[#24242a] text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-medium">
-          <Sparkles className="h-3.5 w-3.5" />
-          Pencarian Teks Dokumen
+      {/* Minimalist Search Input Bar */}
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Cari kata kunci pada slide, tabel, atau teks..."
+            className="w-full bg-[#1c1c20] border border-[#2e2e36] focus:border-[#444452] rounded-xl pl-10 pr-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none transition-all"
+          />
         </div>
-        <h2 className="text-2xl font-bold text-white tracking-tight">Cari Dokumen Presentation lokal</h2>
-        <p className="text-slate-400 text-xs max-w-lg mx-auto leading-relaxed">
-          Cari kata kunci pada judul, teks paragraf, isi tabel, dan label grafik di seluruh slide yang pernah diproses.
-        </p>
-
-        <form onSubmit={handleSearch} className="max-w-xl mx-auto flex gap-2 pt-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ketik kata kunci pencarian..."
-              className="w-full bg-[#1c1c20] border border-[#2e2e36] focus:border-indigo-500 rounded-xl pl-10 pr-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none transition-all"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={isSearching || !query.trim()}
-            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 shrink-0"
-          >
-            {isSearching ? "Mencari..." : "Cari Dokumen"}
-          </button>
-        </form>
-      </div>
+        <button
+          type="submit"
+          disabled={isSearching || !query.trim()}
+          className="px-4 py-2.5 bg-[#24242a] hover:bg-[#2d2d34] disabled:opacity-50 text-white text-xs font-medium rounded-xl border border-[#33333d] transition-all flex items-center gap-1.5 shrink-0"
+        >
+          {isSearching ? "Mencari..." : "Cari Dokumen"}
+        </button>
+      </form>
 
       {/* Results Section */}
       {hasSearched && (
