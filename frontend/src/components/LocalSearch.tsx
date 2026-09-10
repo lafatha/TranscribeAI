@@ -27,49 +27,49 @@ export const LocalSearch: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Search Header Banner */}
-      <div className="glass-panel p-8 rounded-2xl border border-slate-800 text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
+      <div className="bg-[#17171a] p-6 rounded-2xl border border-[#24242a] text-center space-y-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-medium">
           <Sparkles className="h-3.5 w-3.5" />
-          LOCAL FULL-TEXT PRESENTATION SEARCH
+          Pencarian Teks Dokumen
         </div>
-        <h2 className="text-3xl font-extrabold text-white">Search All Processed Presentations</h2>
-        <p className="text-slate-400 text-sm max-w-xl mx-auto">
-          Instantly query keywords across titles, paragraphs, tables, and chart labels. Powered 100% locally by SQLite FTS5.
+        <h2 className="text-2xl font-bold text-white tracking-tight">Cari Dokumen Presentation lokal</h2>
+        <p className="text-slate-400 text-xs max-w-lg mx-auto leading-relaxed">
+          Cari kata kunci pada judul, teks paragraf, isi tabel, dan label grafik di seluruh slide yang pernah diproses.
         </p>
 
-        <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex gap-3 pt-2">
+        <form onSubmit={handleSearch} className="max-w-xl mx-auto flex gap-2 pt-2">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. revenue growth, acquisition, strategy 2026..."
-              className="w-full bg-slate-900/90 border border-slate-700 hover:border-indigo-500/50 focus:border-indigo-500 rounded-xl pl-12 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none transition-all shadow-inner"
+              placeholder="Ketik kata kunci pencarian..."
+              className="w-full bg-[#1c1c20] border border-[#2e2e36] focus:border-indigo-500 rounded-xl pl-10 pr-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none transition-all"
             />
           </div>
           <button
             type="submit"
             disabled={isSearching || !query.trim()}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 disabled:opacity-50 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2"
+            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 shrink-0"
           >
-            {isSearching ? "Searching..." : "Search"}
+            {isSearching ? "Mencari..." : "Cari Dokumen"}
           </button>
         </form>
       </div>
 
       {/* Results Section */}
       {hasSearched && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center text-xs font-semibold text-slate-400 px-2">
-            <span>Found {results.length} matching slides</span>
-            <span>Query: "{query}"</span>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center text-xs text-slate-400 px-1">
+            <span>Ditemukan {results.length} slide yang cocok</span>
+            <span>Kata kunci: "{query}"</span>
           </div>
 
           {results.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {results.map((item, idx) => {
                 const imgRelPath = item.image_path ? item.image_path.split("data")[1] || item.image_path : "";
                 const imgUrl = imgRelPath ? `${API_BASE}/data${imgRelPath.replace(/\\/g, "/")}` : null;
@@ -77,10 +77,10 @@ export const LocalSearch: React.FC = () => {
                 return (
                   <div
                     key={idx}
-                    className="glass-card p-5 rounded-xl border border-slate-800 flex flex-col md:flex-row items-start gap-4 hover:border-indigo-500/40 transition-all"
+                    className="bg-[#17171a] p-4 rounded-xl border border-[#24242a] flex flex-col md:flex-row items-start gap-4 hover:border-[#383842] transition-all"
                   >
                     {imgUrl && (
-                      <div className="w-full md:w-48 aspect-video bg-slate-950 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-slate-800">
+                      <div className="w-full md:w-44 aspect-video bg-black rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-[#28282e]">
                         <img src={imgUrl} alt={`Slide ${item.slide_number}`} className="object-contain w-full h-full" />
                       </div>
                     )}
@@ -89,8 +89,8 @@ export const LocalSearch: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-indigo-400" />
-                          <span className="text-sm font-bold text-white">{item.document_name}</span>
-                          <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-indigo-300">
+                          <span className="text-xs font-semibold text-white">{item.document_name}</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#222228] text-indigo-300 border border-[#2a2a32]">
                             Slide #{item.slide_number}
                           </span>
                         </div>
@@ -98,7 +98,7 @@ export const LocalSearch: React.FC = () => {
 
                       {/* Highlight snippet */}
                       <div
-                        className="text-xs text-slate-300 bg-slate-950/60 p-3 rounded-lg border border-slate-800/80 leading-relaxed font-mono"
+                        className="text-xs text-slate-300 bg-[#1c1c20] p-3 rounded-lg border border-[#26262c] leading-relaxed font-mono"
                         dangerouslySetInnerHTML={{ __html: item.snippet }}
                       />
                     </div>
@@ -107,9 +107,9 @@ export const LocalSearch: React.FC = () => {
               })}
             </div>
           ) : (
-            <div className="glass-panel p-12 text-center text-slate-500 space-y-2 rounded-xl">
-              <p className="text-sm">No presentation slides matched your query.</p>
-              <p className="text-xs text-slate-600">Try searching for broader keywords like "revenue", "2026", or "table".</p>
+            <div className="bg-[#17171a] border border-[#24242a] p-10 text-center text-slate-500 space-y-1 rounded-xl text-xs">
+              <p className="font-medium text-slate-300">Tidak ada slide yang cocok dengan kata kunci.</p>
+              <p className="text-slate-500">Coba gunakan kata kunci umum lainnya.</p>
             </div>
           )}
         </div>

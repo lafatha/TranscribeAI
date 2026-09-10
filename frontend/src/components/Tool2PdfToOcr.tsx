@@ -120,36 +120,36 @@ export const Tool2PdfToOcr: React.FC = () => {
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Tool Header */}
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-[#17171a] p-6 rounded-2xl border border-[#24242a] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold mb-2">
             <FileText className="h-3.5 w-3.5" />
             WORKFLOW 2 — PDF TO STRUCTURED OCR
           </div>
-          <h2 className="text-2xl font-bold text-white">Extract Structured Text, Tables & Charts from PDF</h2>
-          <p className="text-slate-400 text-sm mt-1">
-            Runs 100% offline local OCR engine to extract titles, text paragraphs, table structures, and bar/line charts without hallucination.
+          <h2 className="text-xl font-bold text-white">Ekstraksi Teks, Tabel & Grafik Terstruktur dari PDF</h2>
+          <p className="text-slate-400 text-xs mt-1">
+            Menjalankan engine OCR lokal 100% offline untuk mengekstrak judul, paragraf, tabel, dan grafik tanpa halusinasi.
           </p>
         </div>
       </div>
 
       {/* Workflow Step Progress Bar */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800/80">
+      <div className="bg-[#17171a] p-3 rounded-2xl border border-[#24242a]">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-xs">
-          <div className={`p-2.5 rounded-xl border transition-all ${activeStep === 1 ? "bg-cyan-600/20 border-cyan-500 text-white font-bold" : activeStep > 1 ? "bg-slate-900 border-slate-800 text-emerald-400" : "bg-slate-950/40 border-slate-900 text-slate-500"}`}>
-            <span>1. Upload PDF</span>
+          <div className={`p-2 rounded-xl border transition-all ${activeStep === 1 ? "bg-cyan-500/10 border-cyan-500/30 text-white font-semibold" : activeStep > 1 ? "bg-[#1c1c20] border-[#28282e] text-emerald-400" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+            <span>1. Unggah PDF</span>
           </div>
-          <div className={`p-2.5 rounded-xl border transition-all ${activeStep === 2 ? "bg-cyan-600/20 border-cyan-500 text-white font-bold" : activeStep > 2 ? "bg-slate-900 border-slate-800 text-emerald-400" : "bg-slate-950/40 border-slate-900 text-slate-500"}`}>
-            <span>2. Read Pages</span>
+          <div className={`p-2 rounded-xl border transition-all ${activeStep === 2 ? "bg-cyan-500/10 border-cyan-500/30 text-white font-semibold" : activeStep > 2 ? "bg-[#1c1c20] border-[#28282e] text-emerald-400" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+            <span>2. Baca Halaman</span>
           </div>
-          <div className={`p-2.5 rounded-xl border transition-all ${activeStep === 3 ? "bg-cyan-600/20 border-cyan-500 text-white font-bold" : activeStep > 3 ? "bg-slate-900 border-slate-800 text-emerald-400" : "bg-slate-950/40 border-slate-900 text-slate-500"}`}>
-            <span>3. Extract Text</span>
+          <div className={`p-2 rounded-xl border transition-all ${activeStep === 3 ? "bg-cyan-500/10 border-cyan-500/30 text-white font-semibold" : activeStep > 3 ? "bg-[#1c1c20] border-[#28282e] text-emerald-400" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+            <span>3. Ekstrak Teks</span>
           </div>
-          <div className={`p-2.5 rounded-xl border transition-all ${activeStep === 4 ? "bg-cyan-600/20 border-cyan-500 text-white font-bold" : activeStep > 4 ? "bg-slate-900 border-slate-800 text-emerald-400" : "bg-slate-950/40 border-slate-900 text-slate-500"}`}>
-            <span>4. Analyze Visuals</span>
+          <div className={`p-2 rounded-xl border transition-all ${activeStep === 4 ? "bg-cyan-500/10 border-cyan-500/30 text-white font-semibold" : activeStep > 4 ? "bg-[#1c1c20] border-[#28282e] text-emerald-400" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+            <span>4. Analisis Grafik</span>
           </div>
-          <div className={`p-2.5 rounded-xl border transition-all ${activeStep === 5 ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold" : "bg-slate-950/40 border-slate-900 text-slate-500"}`}>
-            <span>5. Complete</span>
+          <div className={`p-2 rounded-xl border transition-all ${activeStep === 5 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold" : "bg-[#17171a] border-[#222228] text-slate-500"}`}>
+            <span>5. Selesai</span>
           </div>
         </div>
       </div>
@@ -168,7 +168,7 @@ export const Tool2PdfToOcr: React.FC = () => {
       )}
 
       {/* Main Upload Section */}
-      <div className="glass-panel p-8 rounded-3xl space-y-6">
+      <div className="bg-[#17171a] border border-[#24242a] p-6 rounded-2xl space-y-6">
         <div className="border-2 border-dashed border-slate-700 hover:border-cyan-500/50 rounded-2xl p-10 text-center transition-all bg-slate-900/40 relative">
           <input
             type="file"

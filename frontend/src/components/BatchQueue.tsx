@@ -36,30 +36,31 @@ export const BatchQueue: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Banner */}
-      <div className="glass-panel p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
+      <div className="bg-[#17171a] p-6 rounded-2xl border border-[#24242a] flex items-center justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-semibold mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#222228] text-slate-300 text-xs font-medium mb-2 border border-[#2a2a32]">
             <ListTodo className="h-3.5 w-3.5 text-indigo-400" />
-            PERSISTENT BATCH QUEUE
+            ANTREAN BATCH DOKUMEN
           </div>
-          <h2 className="text-2xl font-bold text-white">Background Job Manager</h2>
-          <p className="text-slate-400 text-sm mt-1">
-            Jobs are persisted in SQLite and survive application restarts.
+          <h2 className="text-xl font-bold text-white tracking-tight">Pengelola Job Latar Belakang</h2>
+          <p className="text-slate-400 text-xs mt-0.5">
+            Daftar tugas pemrosesan video & OCR tersimpan secara permanen di SQLite.
           </p>
         </div>
 
         <button
           onClick={loadJobs}
-          className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition-all"
+          className="p-2.5 bg-[#222228] hover:bg-[#2a2a32] text-slate-300 rounded-xl border border-[#2e2e36] transition-all"
+          title="Refresh Queue"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
       {/* Jobs List */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {jobs.length > 0 ? (
           jobs.map((job) => {
             const isCompleted = job.status === "completed";
@@ -70,45 +71,45 @@ export const BatchQueue: React.FC = () => {
             return (
               <div
                 key={job.id}
-                className="glass-card p-5 rounded-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                className="bg-[#17171a] p-4 rounded-xl border border-[#24242a] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-[#383842] transition-all"
               >
-                <div className="space-y-1.5 flex-1">
+                <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-3">
-                    <span className="font-bold text-white text-sm">
+                    <span className="font-semibold text-white text-xs font-mono">
                       {job.file_path.split(/[\/\\]/).pop()}
                     </span>
-                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800 text-indigo-300 border border-slate-700">
+                    <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-[#222228] text-indigo-300 border border-[#2a2a32]">
                       {job.job_type.toUpperCase()}
                     </span>
 
                     {/* Status Badge */}
                     {isCompleted && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                         <CheckCircle2 className="h-3 w-3" />
-                        Completed
+                        Selesai
                       </span>
                     )}
                     {isProcessing && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 animate-pulse">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 animate-pulse">
                         <RefreshCw className="h-3 w-3 animate-spin" />
-                        Processing ({Math.round(job.progress * 100)}%)
+                        Memproses ({Math.round(job.progress * 100)}%)
                       </span>
                     )}
                     {isQueued && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
                         <Clock className="h-3 w-3" />
-                        Queued
+                        Dalam Antrean
                       </span>
                     )}
                     {isFailed && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">
                         <AlertCircle className="h-3 w-3" />
-                        Failed
+                        Gagal
                       </span>
                     )}
                   </div>
 
-                  <p className="text-xs text-slate-400 font-mono">{job.message}</p>
+                  <p className="text-[11px] text-slate-400 font-mono">{job.message}</p>
                 </div>
 
                 {/* Controls */}
@@ -116,20 +117,20 @@ export const BatchQueue: React.FC = () => {
                   {(isFailed || job.status === "cancelled") && (
                     <button
                       onClick={() => handleRetry(job.id)}
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-indigo-300 rounded-lg border border-slate-700 flex items-center gap-1"
+                      className="px-3 py-1 bg-[#222228] hover:bg-[#2a2a32] text-xs font-medium text-indigo-300 rounded-lg border border-[#2e2e36] flex items-center gap-1"
                     >
-                      <Play className="h-3.5 w-3.5 fill-current" />
-                      Retry
+                      <Play className="h-3 w-3 fill-current" />
+                      Coba Lagi
                     </button>
                   )}
 
                   {(isQueued || isProcessing) && (
                     <button
                       onClick={() => handleCancel(job.id)}
-                      className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-semibold text-rose-300 rounded-lg border border-rose-500/30 flex items-center gap-1"
+                      className="px-3 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-medium text-rose-400 rounded-lg border border-rose-500/20 flex items-center gap-1"
                     >
-                      <XCircle className="h-3.5 w-3.5" />
-                      Cancel
+                      <XCircle className="h-3 w-3" />
+                      Batalkan
                     </button>
                   )}
                 </div>
@@ -137,8 +138,8 @@ export const BatchQueue: React.FC = () => {
             );
           })
         ) : (
-          <div className="glass-panel p-12 text-center text-slate-500 rounded-xl">
-            No background processing jobs in queue.
+          <div className="bg-[#17171a] border border-[#24242a] p-10 text-center text-slate-500 rounded-xl text-xs">
+            Belum ada job pemrosesan di antrean.
           </div>
         )}
       </div>
