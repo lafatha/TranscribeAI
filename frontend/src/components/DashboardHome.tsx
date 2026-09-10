@@ -46,9 +46,6 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({ onSelectWorkflow }
     <div className="max-w-3xl mx-auto py-12 px-4 space-y-10">
       {/* Central Welcome Header (Claude/Perplexity Style) */}
       <div className="text-center space-y-3">
-        <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">
-          Transcribe AI Local Workspace
-        </span>
         <h1 className="text-3xl md:text-4xl font-normal text-[#ececee] tracking-tight">
           Apa yang ingin Anda proses?
         </h1>

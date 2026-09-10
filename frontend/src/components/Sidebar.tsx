@@ -12,7 +12,7 @@ import {
   ListTodo, 
   Video, 
   FileText, 
-  Sparkles,
+  Mic,
   ChevronDown,
   LayoutDashboard,
   Clock,
@@ -66,18 +66,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand Header */}
         <div className="flex items-center justify-between px-2 pt-1 pb-2">
           {!collapsed && (
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveTab("dashboard")}>
-              <div className="h-7 w-7 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
-                <Sparkles className="h-4 w-4" />
-              </div>
-              <span className="font-semibold text-sm tracking-tight text-white">Transcribe AI</span>
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab("dashboard")}>
+              <Mic className="h-5 w-5 text-indigo-400" />
+              <span className="font-semibold text-sm tracking-tight text-white">Transcribe OCR</span>
             </div>
           )}
           {collapsed && (
             <div className="mx-auto cursor-pointer" onClick={() => setActiveTab("dashboard")}>
-              <div className="h-8 w-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                <Sparkles className="h-4 w-4" />
-              </div>
+              <Mic className="h-5 w-5 text-indigo-400" />
             </div>
           )}
 
@@ -168,20 +164,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {!collapsed && (
           <>
-            {/* Quick Engine Status Card */}
-            <div className="bg-[#1c1c20] border border-[#26262c] rounded-xl p-3 space-y-2 text-xs">
-              <div className="flex items-center justify-between text-slate-400 text-[11px] font-medium">
-                <span>System Status</span>
-                <span className="flex items-center gap-1 text-emerald-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Offline
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 leading-tight">
-                Processing confidential presentations 100% locally.
-              </p>
-            </div>
-
             {/* Sessions / Recent History List */}
             <div className="pt-2 space-y-2">
               <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 px-2 uppercase tracking-wider">
