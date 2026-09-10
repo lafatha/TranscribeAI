@@ -91,10 +91,6 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({ onSelectWorkflow }
             </button>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] text-slate-500">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-            <span>100% Offline</span>
-          </div>
         </div>
       </div>
 

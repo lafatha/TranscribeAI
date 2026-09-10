@@ -210,7 +210,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed && (
             <div className="truncate">
               <p className="text-xs font-medium text-slate-200 truncate leading-none">Local Workspace</p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-none">Air-Gapped Engine</p>
             </div>
           )}
         </div>
