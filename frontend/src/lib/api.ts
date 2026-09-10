@@ -67,7 +67,7 @@ export interface BatchJob {
 
 export interface SearchResultItem {
   document_name: string;
-  pdf_path: str;
+  pdf_path: string;
   slide_number: number;
   snippet: string;
   full_text: string;
