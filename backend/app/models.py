@@ -102,3 +102,6 @@ class SearchResultItem(BaseModel):
     full_text: str
     confidence: float
     image_path: Optional[str] = None
+
+# SQLAlchemy model definitions and schema relationships
+
