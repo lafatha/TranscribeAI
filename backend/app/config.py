@@ -48,3 +48,6 @@ def sanitize_filename(filename: str) -> str:
         safe_name = "upload.file"
         
     return f"{uuid.uuid4().hex[:8]}_{safe_name}"
+
+# Configuration environment defaults initialized
+
