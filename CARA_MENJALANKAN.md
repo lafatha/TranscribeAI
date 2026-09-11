@@ -123,3 +123,6 @@ python backend/tests/benchmark.py
   Pastikan terminal backend (Langkah 1) masih menyala dan tidak ditutup.
 - **Apakah butuh koneksi internet?**
   Tidak. Sistem ini **100% Offline & Air-Gapped**, semua pemrosesan dilakukan lokal di dalam komputer.
+
+<!-- Catatan troubleshooting dan env setup -->
+
