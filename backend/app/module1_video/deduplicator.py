@@ -115,9 +115,17 @@ def process_and_deduplicate_slides(
 
         rectified_frame, quad_detected = process_frame_perspective(best_frame)
 
-        filename = f"slide_{slide_id:03d}_frame_{best_frame_data['frame_idx']}.png"
+        # Cap resolution to max 1920x1080 (1080p)
+        h, w = rectified_frame.shape[:2]
+        if w > 1920 or h > 1080:
+            scale = min(1920.0 / w, 1080.0 / h)
+            new_w = max(1, int(w * scale))
+            new_h = max(1, int(h * scale))
+            rectified_frame = cv2.resize(rectified_frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
+
+        filename = f"slide_{slide_id:03d}_frame_{best_frame_data['frame_idx']}.jpg"
         save_path = str(job_crop_dir / filename)
-        cv2.imwrite(save_path, rectified_frame)
+        cv2.imwrite(save_path, rectified_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
 
         sim_to_rep = 1.0
         if len(cluster) > 1:

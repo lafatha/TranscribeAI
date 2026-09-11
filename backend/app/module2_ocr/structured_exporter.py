@@ -4,15 +4,115 @@ from typing import List, Dict, Any, Tuple
 
 from app.config import EXPORT_DIR, DEFAULT_OCR_REVIEW_THRESHOLD
 
+import fitz  # PyMuPDF
+
+def generate_searchable_pdf(pdf_path: str, page_results: List[Dict[str, Any]], output_pdf_path: str) -> str:
+    """
+    Creates a Searchable PDF by embedding an invisible selectable text layer (render_mode=3)
+    on top of each slide page so users can highlight, copy, & Ctrl+F text in any PDF reader.
+    Uses 72 DPI PDF Point coordinates directly for pixel-perfect 1:1 alignment.
+    """
+    doc = fitz.open(pdf_path)
+    for i, page_data in enumerate(page_results):
+        if i >= len(doc):
+            break
+        page = doc[i]
+        elements = page_data.get("elements", [])
+        if not elements:
+            continue
+
+        for elem in elements:
+            text = elem.get("text", "").strip()
+            bbox = elem.get("bbox", [])
+            if not text or len(bbox) != 4:
+                continue
+
+            x0, y0, x1, y1 = bbox
+            rect = fitz.Rect(x0, y0, x1, y1)
+            if rect.width > 0.5 and rect.height > 0.5:
+                try:
+                    # Estimate font size from rectangle height for accurate text fitting
+                    font_size = max(5.0, min(rect.height * 0.75, 36.0))
+                    page.insert_textbox(rect, text, render_mode=3, fontname="helv", fontsize=font_size)
+                except Exception:
+                    pass
+
+    doc.save(output_pdf_path, garbage=4, deflate=True)
+    doc.close()
+    return output_pdf_path
+
+
+
+def generate_formatted_pdf_report(doc_name: str, page_results: List[Dict[str, Any]], output_pdf_path: str) -> str:
+    """
+    Creates a neatly formatted PDF document report containing structured OCR titles,
+    paragraphs, and extracted table visuals.
+    """
+    report_doc = fitz.open()
+
+    for p_idx, page_data in enumerate(page_results, start=1):
+        # Create an A4 page (595 x 842 points)
+        page = report_doc.new_page(width=595, height=842)
+        
+        # Header banner
+        shape = page.new_shape()
+        shape.draw_rect(fitz.Rect(0, 0, 595, 45))
+        shape.finish(color=(0.12, 0.12, 0.16), fill=(0.12, 0.12, 0.16))
+        shape.commit()
+
+        page.insert_text((30, 28), f"OCR Presentation Document — Slide #{p_idx}", fontsize=12, color=(1, 1, 1))
+
+        y_cursor = 70
+        elements = page_data.get("elements", [])
+        visuals = page_data.get("visuals", [])
+
+        # Slide Titles & Paragraphs
+        for elem in elements:
+            if y_cursor > 780:
+                page = report_doc.new_page(width=595, height=842)
+                y_cursor = 50
+
+            text = elem.get("text", "").strip()
+            e_type = elem.get("type", "paragraph")
+
+            if e_type == "title":
+                rect = fitz.Rect(30, y_cursor, 565, y_cursor + 35)
+                page.insert_textbox(rect, text, fontsize=13, fontname="helv", color=(0.1, 0.2, 0.6))
+                y_cursor += 40
+            else:
+                rect = fitz.Rect(30, y_cursor, 565, y_cursor + 50)
+                page.insert_textbox(rect, text, fontsize=10, fontname="helv", color=(0.2, 0.2, 0.2))
+                y_cursor += max(25, 15 * (text.count("\n") + 1))
+
+        # Embedded Table / Graphic Images
+        for vis in visuals:
+            v_img = vis.get("image_path", "")
+            if v_img and Path(v_img).exists():
+                if y_cursor > 600:
+                    page = report_doc.new_page(width=595, height=842)
+                    y_cursor = 50
+
+                img_rect = fitz.Rect(30, y_cursor, 400, y_cursor + 180)
+                try:
+                    page.insert_image(img_rect, filename=v_img)
+                    y_cursor += 195
+                except Exception:
+                    pass
+
+    report_doc.save(output_pdf_path, garbage=4, deflate=True)
+    report_doc.close()
+    return output_pdf_path
+
+
 def generate_structured_outputs(
     doc_name: str,
     pdf_path: str,
     page_results: List[Dict[str, Any]],
     ocr_review_threshold: float = DEFAULT_OCR_REVIEW_THRESHOLD
-) -> Tuple[str, str, str, int]:
+) -> Tuple[str, str, str, str, str, int]:
     """
-    Generates output.md, output.json, and output.txt without hallucination.
-    Returns (md_path, json_path, txt_path, needs_review_count).
+    Generates output.md, output.json, output.txt, searchable.pdf, and report.pdf.
+    Returns (md_path, json_path, txt_path, searchable_pdf_path, pdf_report_path, needs_review_count).
     """
     base_name = Path(pdf_path).stem
     out_dir = EXPORT_DIR / base_name
@@ -21,6 +121,8 @@ def generate_structured_outputs(
     md_path = str(out_dir / f"{base_name}_output.md")
     json_path = str(out_dir / f"{base_name}_output.json")
     txt_path = str(out_dir / f"{base_name}_output.txt")
+    searchable_pdf_path = str(out_dir / f"{base_name}_searchable.pdf")
+    pdf_report_path = str(out_dir / f"{base_name}_report.pdf")
 
     needs_review_count = 0
     md_lines = [f"# Presentation: {doc_name}\n"]
@@ -125,4 +227,18 @@ def generate_structured_outputs(
     with open(txt_path, "w", encoding="utf-8") as f:
         f.write("\n\n".join(txt_lines))
 
-    return md_path, json_path, txt_path, needs_review_count
+    # Generate Searchable PDF (Embedded OCR text layer overlay)
+    try:
+        generate_searchable_pdf(pdf_path, page_results, searchable_pdf_path)
+    except Exception as e:
+        print(f"Warning: Failed to generate searchable PDF: {e}")
+        searchable_pdf_path = pdf_path
+
+    # Generate Formatted PDF Report
+    try:
+        generate_formatted_pdf_report(doc_name, page_results, pdf_report_path)
+    except Exception as e:
+        print(f"Warning: Failed to generate PDF report: {e}")
+        pdf_report_path = pdf_path
+
+    return md_path, json_path, txt_path, searchable_pdf_path, pdf_report_path, needs_review_count

@@ -117,16 +117,17 @@ def test_end_to_end_pipeline(tmp_path):
     page_results = []
     for i in range(len(doc)):
         page = doc[i]
-        elements, page_img = ocr_engine.extract_page_ocr(page, i + 1)
+        elements, page_img, page_metrics = ocr_engine.extract_page_ocr(page, i + 1)
         elements, visuals = analyze_page_layout_and_graphics(page_img, i + 1, elements, "test_job")
         page_results.append({
             "page": i + 1,
             "elements": elements,
-            "visuals": visuals
+            "visuals": visuals,
+            "metrics": page_metrics
         })
     doc.close()
 
-    md_path, json_path, txt_path, review_count = generate_structured_outputs(
+    md_path, json_path, txt_path, searchable_pdf_path, pdf_report_path, review_count = generate_structured_outputs(
         doc_name="test_presentation.mp4",
         pdf_path=out_pdf,
         page_results=page_results,
@@ -136,6 +137,8 @@ def test_end_to_end_pipeline(tmp_path):
     assert os.path.exists(md_path)
     assert os.path.exists(json_path)
     assert os.path.exists(txt_path)
+    assert os.path.exists(searchable_pdf_path)
+    assert os.path.exists(pdf_report_path)
 
     # 4. Search verification
     index_ocr_document("test_presentation.mp4", out_pdf, page_results)

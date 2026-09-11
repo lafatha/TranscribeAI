@@ -126,3 +126,26 @@ async def rebuild_pdf_from_slides(job_id: str):
     save_job(job)
 
     return {"output_pdf": out_path, "metadata": meta}
+
+@router.get("/export/{job_id}")
+async def export_video_pdf(job_id: str, inline: bool = False):
+    """Downloads or views compiled video slide PDF document."""
+    job = get_job(job_id)
+    if not job or job["status"] != JobStatus.COMPLETED.value:
+        raise HTTPException(status_code=404, detail="Job not ready or failed")
+
+    target = job.get("output_path")
+    if not target or not Path(target).exists():
+        target = str(PROCESSED_DIR / f"{job_id}_slides.pdf")
+
+    if not Path(target).exists():
+        raise HTTPException(status_code=404, detail="Compiled PDF file not found")
+
+    disp = "inline" if inline else "attachment"
+    return FileResponse(
+        path=target,
+        media_type="application/pdf",
+        filename=f"slides_{job_id[:8]}.pdf",
+        content_disposition_type=disp
+    )
+

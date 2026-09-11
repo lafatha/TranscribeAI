@@ -19,6 +19,8 @@ def build_slide_pdf(
     output_pdf = Path(output_pdf_path)
     output_pdf.parent.mkdir(parents=True, exist_ok=True)
 
+    import io
+
     doc = fitz.open()
 
     for slide in slides:
@@ -27,7 +29,18 @@ def build_slide_pdf(
             continue
 
         with Image.open(img_path) as img:
+            # Enforce max 1080p resolution cap (1920x1080)
+            if img.width > 1920 or img.height > 1080:
+                img.thumbnail((1920, 1080), Image.Resampling.LANCZOS)
+
             w, h = img.size
+
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=85, optimize=True)
+            img_bytes = buf.getvalue()
 
         # Create PDF page with matching dimensions (in points: 1 px ~= 0.75 pt)
         page_w = float(w) * 0.75
@@ -35,9 +48,9 @@ def build_slide_pdf(
         
         page = doc.new_page(width=page_w, height=page_h)
         rect = fitz.Rect(0, 0, page_w, page_h)
-        page.insert_image(rect, filename=img_path)
+        page.insert_image(rect, stream=img_bytes)
 
-    doc.save(str(output_pdf))
+    doc.save(str(output_pdf), garbage=4, deflate=True)
     doc.close()
 
     # Generate metadata JSON

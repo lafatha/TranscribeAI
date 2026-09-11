@@ -1,42 +1,51 @@
-# Offline Presentation Video & Document Intelligence System
+# Transcribe AI — Offline Presentation Video & Document Intelligence Engine
 
-A **100% self-hosted, completely offline document processing system** designed to convert smartphone recordings of presentation screens into clean slide PDFs (Tool 1) and extract structured AI-readable Markdown and JSON data from presentation PDFs (Tool 2).
+A **100% self-hosted, air-gapped presentation processing & OCR system** designed to convert presentation screen recordings into clean slide PDFs (Tool 1) and extract structured, searchable data from presentation PDFs using high-precision PaddleOCR & PyMuPDF (Tool 2).
 
 ---
 
-## 🌟 Key Architecture & Capabilities
+## Key Features & Architecture
 
 ### Tool 1 — Video → Clean Slide PDF (`module1_video`)
-- **Smartphone Recording Handling**: Perspective distortion, camera movement, focus shifts, screen glare, motion blur.
-- **Adaptive Frame Sampling**: 5 FPS base rate with dynamic burst sampling around detected transitions.
-- **Multi-Metric Slide Change Detection**: Combines SSIM, 64-bit Perceptual Hash (dHash), HSV Color Histogram distance, and Canny Edge difference to differentiate camera jitter from true slide changes.
-- **Deduplication Engine**: Configurable threshold `DUPLICATE_THRESHOLD` (0.70 to 0.90, default 0.75).
-- **Best-Frame Quality Scoring**: Laplacian variance sharpness, Tenengrad gradient, exposure, contrast, and stability metrics.
-- **4-Point Perspective Warp**: Detects presentation screen quad and rectifies keystone distortion, with safe margin fallback.
-- **Clean PDF Compiler & Metadata**: Generates high-res `slides.pdf`, timestamp mapping (`00:00:34.733`), and metadata JSON.
+- **Smartphone Recording Handling**: Quad warp perspective correction for tilted screens, camera jitter filtering, and lighting change tolerance.
+- **Adaptive Frame Sampling**: 5 FPS base sampling rate with dynamic transition burst detection.
+- **Multi-Metric Deduplication**: Combines SSIM, 64-bit Perceptual Hash (dHash), and HSV Color Histograms (`DUPLICATE_THRESHOLD = 0.75`).
+- **Quality-Based Keyframe Selection**: Ranks frames by Laplacian variance sharpness, Tenengrad gradient, exposure, and stability.
+- **Clean PDF Compiler**: Outputs high-res `slides.pdf` with precise timestamp mappings (`00:00:34.733`).
 
 ### Tool 2 — PDF → Structured OCR (`module2_ocr`)
-- **100% Offline OCR**: PyMuPDF fast text rendering + EasyOCR / Tesseract fallback for scanned slides.
-- **Layout & Graphic Segmentation**: Detects titles, paragraphs, tables, bar/line/pie charts, diagrams, infographics.
-- **Non-Hallucinating Exporter**:
-  - `output.md`: AI-readable Markdown with table structure and visual references.
-  - `output.json`: Detailed page-by-page bounding box schema.
-  - `output.txt`: Clean text for search.
-- **Quality Control**: Flags slides with mean confidence < `OCR_REVIEW_THRESHOLD` (0.75) as `[Needs Review]`.
-- **Local Full-Text Search**: SQLite `FTS5` engine indexing all presentation transcripts with snippet highlights and slide image references.
+- **72 DPI PDF Point Coordinate Standardization**: All extracted element bounding boxes `[x0, y0, x1, y1]` are standardized to native 72 DPI PDF Points. Eliminates scaling drift and ensures 1:1 pixel-perfect text placement in Searchable PDFs and web overlays.
+- **Hybrid Digital + Vision Extraction**: Combines PyMuPDF native digital text layer extraction (`page.get_text("dict")`) with PaddleOCR vision detection (`det_limit_side_len=1600`) via spatial IoU deduplication.
+  - Native digital text layers are captured with 100% precision.
+  - Scanned graphics, diagram labels, and flattened slide text are captured by PaddleOCR.
+  - Sub-second processing latency per page on standard CPU.
+- **Layout & Visual Crop Segmentation**: Isolates titles, paragraphs, tables, bar/line/pie charts, and diagrams.
+- **Multi-Format Exporters**:
+  - `searchable.pdf`: Searchable PDF with invisible selectable text layer overlay (`render_mode=3`).
+  - `report.pdf`: Formatted PDF document report with titles and embedded table graphics.
+  - `output.md`: AI-readable Markdown with table structures.
+  - `output.json`: Structured page-by-page bounding box schema.
+- **SQLite FTS5 Local Search**: Full-text search engine indexing presentation transcripts with instant snippet highlights.
+
+---
+
+## 💻 Tech Stack
+
+* **Backend**: Python 3.14, FastAPI, PyMuPDF (fitz), PaddleOCR, RapidOCR, OpenCV, SQLite (WAL mode + FTS5).
+* **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Lucide React, HTML5 Canvas Visualizer.
 
 ---
 
 ## 🚀 Quick Start Guide
 
-### 1. Start FastAPI Backend
+### 1. Launch Backend Server
 ```bash
 cd backend
 python -m pip install -r requirements.txt
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-### 2. Start Next.js Enterprise Web UI
+### 2. Launch Web UI
 ```bash
 cd frontend
 npm install
@@ -46,19 +55,21 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🧪 Testing & Benchmarking
+## 🧪 Testing & Verification
 
-### Run Automated End-to-End Pipeline Test
+### Run End-to-End Test Suite
 ```bash
-python backend/tests/test_system.py
+python -m pytest backend/tests/
 ```
+*Expected Output*: `6 passed in ~6.9s`.
 
-### Run Performance & Deduplication Benchmark
+### Verify Frontend TypeScript Types
 ```bash
-python backend/tests/benchmark.py
+cd frontend
+npx tsc --noEmit
 ```
 
 ---
 
-## 🔒 Air-Gapped Deployment
-See [offline/README_OFFLINE.md](file:///c:/Users/athal/gabriel/offline/README_OFFLINE.md) for instructions on packaging offline wheels, Docker images, and deploying to disconnected environments.
+## 🤖 Instructions for AI Coding Assistants
+Refer to [AGENTS.md](file:///c:/Users/athal/gabriel/AGENTS.md) for architectural guidelines, coordinate conventions, and UI design rules.

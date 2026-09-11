@@ -50,7 +50,7 @@ def analyze_page_layout_and_graphics(
             # Find text inside/nearby table
             nearby_texts = []
             for elem in text_elements:
-                eb = elem["bbox"]
+                eb = elem.get("bbox_px", elem["bbox"])
                 if (x <= eb[0] <= x + bw or x <= eb[2] <= x + bw) and (y - 40 <= eb[1] <= y + bh + 40):
                     nearby_texts.append(elem["text"])
 
@@ -67,8 +67,8 @@ def analyze_page_layout_and_graphics(
     # Mask out text bounding boxes
     non_text_mask = thresh.copy()
     for elem in text_elements:
-        eb = elem["bbox"]
-        cv2.rectangle(non_text_mask, (max(0, eb[0]-5), max(0, eb[1]-5)), (min(w, eb[2]+5), min(h, eb[3]+5)), 0, -1)
+        eb = elem.get("bbox_px", elem["bbox"])
+        cv2.rectangle(non_text_mask, (max(0, int(eb[0])-5), max(0, int(eb[1])-5)), (min(w, int(eb[2])+5), min(h, int(eb[3])+5)), 0, -1)
 
     chart_contours, _ = cv2.findContours(non_text_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for cnt in chart_contours:
@@ -96,7 +96,7 @@ def analyze_page_layout_and_graphics(
 
                 nearby_texts = []
                 for elem in text_elements:
-                    eb = elem["bbox"]
+                    eb = elem.get("bbox_px", elem["bbox"])
                     if (x - 50 <= eb[0] <= x + bw + 50) and (y - 50 <= eb[1] <= y + bh + 50):
                         nearby_texts.append(elem["text"])
 

@@ -72,14 +72,16 @@ async def get_ocr_results(job_id: str):
         "markdown_path": meta.get("markdown_path"),
         "json_path": meta.get("json_path"),
         "txt_path": meta.get("txt_path"),
+        "searchable_pdf_path": meta.get("searchable_pdf_path"),
+        "pdf_report_path": meta.get("pdf_report_path"),
         "needs_review_count": meta.get("needs_review_count", 0),
         "total_pages": meta.get("total_pages", 0),
         "pages": meta.get("pages", [])
     }
 
 @router.get("/export/{job_id}/{fmt}")
-async def export_ocr_file(job_id: str, fmt: str):
-    """Downloads exported structured file (.md, .json, .txt)."""
+async def export_ocr_file(job_id: str, fmt: str, inline: bool = False):
+    """Downloads or views exported structured file (.md, .json, .txt, .pdf searchable, .pdf report, original)."""
     job = get_job(job_id)
     if not job or job["status"] != JobStatus.COMPLETED.value:
         raise HTTPException(status_code=404, detail="Job not ready or failed")
@@ -95,10 +97,26 @@ async def export_ocr_file(job_id: str, fmt: str):
     elif fmt == "txt":
         target = meta.get("txt_path")
         media_type = "text/plain"
+    elif fmt == "pdf" or fmt == "searchable":
+        target = meta.get("searchable_pdf_path")
+        media_type = "application/pdf"
+    elif fmt == "report":
+        target = meta.get("pdf_report_path")
+        media_type = "application/pdf"
+    elif fmt == "original":
+        target = job.get("file_path")
+        media_type = "application/pdf"
     else:
-        raise HTTPException(status_code=400, detail="Invalid format type. Allowed: md, json, txt")
+        raise HTTPException(status_code=400, detail="Invalid format type. Allowed: md, json, txt, pdf, report, original")
 
     if not target or not Path(target).exists():
         raise HTTPException(status_code=404, detail="Export file not found")
 
-    return FileResponse(path=target, media_type=media_type, filename=Path(target).name)
+    disp = "inline" if inline else "attachment"
+    return FileResponse(
+        path=target,
+        media_type=media_type,
+        filename=Path(target).name,
+        content_disposition_type=disp
+    )
+

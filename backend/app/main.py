@@ -118,22 +118,24 @@ def handle_pdf_to_ocr_job(
         )
 
         page = doc[i]
-        elements, page_img = ocr_engine.extract_page_ocr(page, p_num)
+        elements, page_img, page_metrics = ocr_engine.extract_page_ocr(page, p_num, job_id=job_id)
         elements, visuals = analyze_page_layout_and_graphics(page_img, p_num, elements, job_id)
 
         page_results.append({
             "page": p_num,
             "elements": elements,
-            "visuals": visuals
+            "visuals": visuals,
+            "metrics": page_metrics
         })
+
 
     doc.close()
 
     if is_job_cancelled(job_id):
         raise InterruptedError("Job cancelled by user")
 
-    progress_callback(0.90, "Exporting structured Markdown & JSON data...")
-    md_path, json_path, txt_path, review_count = generate_structured_outputs(
+    progress_callback(0.90, "Exporting Searchable PDF, Formatted PDF Report & Markdown...")
+    md_path, json_path, txt_path, searchable_pdf_path, pdf_report_path, review_count = generate_structured_outputs(
         doc_name=doc_name,
         pdf_path=file_path,
         page_results=page_results,
@@ -149,6 +151,8 @@ def handle_pdf_to_ocr_job(
         "markdown_path": md_path,
         "json_path": json_path,
         "txt_path": txt_path,
+        "searchable_pdf_path": searchable_pdf_path,
+        "pdf_report_path": pdf_report_path,
         "needs_review_count": review_count,
         "processing_time_seconds": round(time.time() - t0, 2),
         "pages": page_results

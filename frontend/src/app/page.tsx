@@ -11,10 +11,17 @@ import { Sparkles, ShieldCheck } from "lucide-react";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<NavTab>("dashboard");
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  const handleSelectWorkflow = (tab: "video" | "ocr" | "search") => {
+  const handleSelectTab = (tab: NavTab) => {
     setActiveTab(tab);
+    setSelectedJobId(null);
+  };
+
+  const handleSelectJob = (tab: NavTab, jobId: string) => {
+    setActiveTab(tab);
+    setSelectedJobId(jobId);
   };
 
   const getBreadcrumbTitle = () => {
@@ -22,9 +29,9 @@ export default function Home() {
       case "dashboard":
         return "Workspace Home";
       case "video":
-        return "Video → Slide PDF";
+        return selectedJobId ? "Video → Slide PDF (History Job)" : "Video → Slide PDF";
       case "ocr":
-        return "PDF → Structured OCR";
+        return selectedJobId ? "PDF → Structured OCR (History Job)" : "PDF → Structured OCR";
       case "search":
         return "Search Presentations";
       case "batch":
@@ -39,7 +46,9 @@ export default function Home() {
       {/* Left Sidebar Layout */}
       <Sidebar
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleSelectTab}
+        selectedJobId={selectedJobId}
+        onSelectJob={handleSelectJob}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
@@ -57,11 +66,18 @@ export default function Home() {
 
         {/* Main Content Body */}
         <main className="flex-1 p-6 md:p-8 max-w-6xl w-full mx-auto">
-          {activeTab === "dashboard" && <DashboardHome onSelectWorkflow={handleSelectWorkflow} />}
-          {activeTab === "video" && <Tool1VideoToPdf onSendToOcr={() => setActiveTab("ocr")} />}
-          {activeTab === "ocr" && <Tool2PdfToOcr />}
+          {activeTab === "dashboard" && <DashboardHome onSelectWorkflow={(t) => handleSelectTab(t)} />}
+          {activeTab === "video" && (
+            <Tool1VideoToPdf
+              selectedJobId={selectedJobId}
+              onSendToOcr={() => handleSelectTab("ocr")}
+            />
+          )}
+          {activeTab === "ocr" && (
+            <Tool2PdfToOcr selectedJobId={selectedJobId} />
+          )}
           {activeTab === "search" && <LocalSearch />}
-          {activeTab === "batch" && <BatchQueue />}
+          {activeTab === "batch" && <BatchQueue onSelectJob={handleSelectJob} />}
         </main>
       </div>
     </div>

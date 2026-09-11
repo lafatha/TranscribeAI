@@ -1,24 +1,29 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, Video, Play, Download, Trash2, CheckCircle, RefreshCw, Sliders, ArrowRight, Clock, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Eye, ChevronDown, ChevronUp, Layers, Check } from "lucide-react";
-import { uploadVideo, fetchVideoJobSlides, updateSlideSelection, rebuildPdf, SlideCandidate, API_BASE } from "../lib/api";
+import { Upload, Video, Play, Download, Trash2, CheckCircle, RefreshCw, Sliders, ArrowRight, Clock, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Eye, ChevronDown, ChevronUp, Layers, Check, FileText, Plus } from "lucide-react";
+import { uploadVideo, fetchVideoJobSlides, updateSlideSelection, rebuildPdf, SlideCandidate, API_BASE, getVideoPdfUrl } from "../lib/api";
 import { SlideReviewModal } from "./SlideReviewModal";
+import { PdfViewer } from "./PdfViewer";
+
 
 interface Tool1Props {
   onSendToOcr?: (pdfUrl: string) => void;
+  selectedJobId?: string | null;
 }
 
 const LOCAL_STORAGE_KEY = "doc_intel_active_video_job";
 const SLIDES_PER_PAGE = 12;
 
-export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr }) => {
+export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJobId }) => {
   const [file, setFile] = useState<File | null>(null);
   const [duplicateThreshold, setDuplicateThreshold] = useState<number>(0.75);
-  const [sampleFps, setSampleFps] = useState<number>(5.0);
+  const [sampleFps, setSampleFps] = useState<number>(1.0);
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+  const [showPdfViewer, setShowPdfViewer] = useState<boolean>(false);
   
   const [jobId, setJobId] = useState<string | null>(null);
+
   const [status, setStatus] = useState<string>("idle");
   const [progress, setProgress] = useState<number>(0);
   const [message, setMessage] = useState<string>("");
@@ -34,14 +39,39 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr }) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalSlideIdx, setModalSlideIdx] = useState<number>(0);
 
-  // Restore active job from localStorage
-  useEffect(() => {
-    const savedJobId = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (savedJobId) {
-      setJobId(savedJobId);
-      setIsProcessing(true);
+  const loadVideoJob = async (targetJobId: string) => {
+    setIsProcessing(true);
+    try {
+      const res = await fetchVideoJobSlides(targetJobId);
+      setStatus(res.status);
+      setProgress(res.progress);
+      setMessage(res.message);
+      if (res.slides) setSlides(res.slides);
+      if (res.output_pdf) setOutputPdf(res.output_pdf);
+      if (res.metadata) setMetadata(res.metadata);
+      
+      if (res.status === "completed" || res.status === "failed" || res.status === "cancelled") {
+        setIsProcessing(false);
+      }
+    } catch (err: any) {
+      console.error("Error loading video job:", err);
+      setIsProcessing(false);
     }
-  }, []);
+  };
+
+  // Restore active job from props or localStorage
+  useEffect(() => {
+    if (selectedJobId) {
+      setJobId(selectedJobId);
+      loadVideoJob(selectedJobId);
+    } else {
+      const savedJobId = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedJobId) {
+        setJobId(savedJobId);
+        loadVideoJob(savedJobId);
+      }
+    }
+  }, [selectedJobId]);
 
   // Poll job status until complete
   useEffect(() => {
@@ -206,153 +236,133 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr }) => {
         </div>
       )}
 
-      {/* Main Upload & Controls Section */}
-      <div className="bg-[#17171a] border border-[#24242a] p-6 rounded-2xl space-y-6">
-        <div className="border border-dashed border-[#33333d] hover:border-slate-500 rounded-xl p-8 text-center transition-all bg-[#141416] relative">
-          <input
-            type="file"
-            accept="video/mp4,video/mov,video/mkv,video/avi"
-            onChange={handleFileChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-[#222228] flex items-center justify-center text-slate-300 border border-[#2e2e36]">
-              <Video className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-200">
-                {file ? file.name : "Drop your recorded presentation video here"}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">Supports MP4, MOV, MKV, AVI (Smartphone recordings up to 2 GB)</p>
-            </div>
-            {file && (
-              <span className="text-xs font-medium px-2.5 py-0.5 bg-[#25252b] border border-[#303038] text-slate-300 rounded-md">
-                {(file.size / (1024 * 1024)).toFixed(1)} MB
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Pre-processing Summary Card */}
-        {file && !isProcessing && status === "idle" && (
-          <div className="bg-[#141416] p-4 rounded-xl border border-[#26262c] space-y-2 text-xs text-slate-300">
-            <h4 className="font-medium text-white text-xs">Informasi Pemrosesan:</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
-                <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Koreksi posisi miring otomatis</span>
+      {/* Upload Section (Shown only when no active video result session is loaded) */}
+      {slides.length === 0 && !outputPdf && (
+        <div className="bg-[#17171a] border border-[#24242a] p-6 rounded-2xl space-y-6">
+          <div className="border border-dashed border-[#33333d] hover:border-slate-500 rounded-xl p-8 text-center transition-all bg-[#141416] relative">
+            <input
+              type="file"
+              accept="video/mp4,video/mov,video/mkv,video/avi"
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-12 w-12 rounded-xl bg-[#222228] flex items-center justify-center text-slate-300 border border-[#2e2e36]">
+                <Video className="h-6 w-6" />
               </div>
-              <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
-                <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Deteksi & hapus duplikat</span>
+              <div>
+                <p className="text-sm font-medium text-slate-200">
+                  {file ? file.name : "Drop recorded presentation video here"}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">Supports MP4, MOV, MKV, AVI (Smartphone recordings up to 2 GB)</p>
               </div>
-              <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
-                <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Buat PDF slide bersih</span>
-              </div>
+              {file && (
+                <span className="text-xs font-medium px-2.5 py-0.5 bg-[#25252b] border border-[#303038] text-slate-300 rounded-md">
+                  {(file.size / (1024 * 1024)).toFixed(1)} MB
+                </span>
+              )}
             </div>
           </div>
-        )}
 
-        {/* Start Processing Action */}
-        <button
-          onClick={handleStartProcessing}
-          disabled={!file || isProcessing}
-          className="w-full py-3 px-5 rounded-xl font-medium text-xs text-white bg-[#24242a] hover:bg-[#2d2d34] disabled:opacity-50 disabled:cursor-not-allowed border border-[#33333d] transition-all flex items-center justify-center gap-2"
-        >
-          {isProcessing ? (
-            <>
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              <span>Memproses Video... ({Math.round(progress * 100)}%)</span>
-            </>
-          ) : (
-            <>
-              <Play className="h-4 w-4 fill-current text-slate-300" />
-              <span>Konversi ke Slide PDF</span>
-            </>
+          {/* Pre-processing Summary Card */}
+          {file && !isProcessing && status === "idle" && (
+            <div className="bg-[#141416] p-4 rounded-xl border border-[#26262c] space-y-2 text-xs text-slate-300">
+              <h4 className="font-medium text-white text-xs">Informasi Pemrosesan:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
+                  <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Koreksi posisi miring otomatis</span>
+                </div>
+                <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
+                  <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Deteksi & hapus duplikat</span>
+                </div>
+                <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
+                  <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Buat PDF slide bersih</span>
+                </div>
+              </div>
+            </div>
           )}
-        </button>
 
-        {/* Progress Bar */}
-        {status !== "idle" && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-slate-300 font-medium">
-              <span>{message}</span>
-              <span className="font-mono text-indigo-400 font-bold">{Math.round(progress * 100)}%</span>
-            </div>
-            <div className="h-3 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-              <div
-                className="h-full bg-gradient-to-r from-indigo-500 via-indigo-400 to-cyan-400 transition-all duration-300 rounded-full"
-                style={{ width: `${progress * 100}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Collapsible Advanced Settings (Progressive Disclosure) */}
-        <div className="pt-2">
+          {/* Start Processing Action */}
           <button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+            onClick={handleStartProcessing}
+            disabled={!file || isProcessing}
+            className="w-full py-3 px-5 rounded-xl font-medium text-xs text-white bg-[#24242a] hover:bg-[#2d2d34] disabled:opacity-50 disabled:cursor-not-allowed border border-[#33333d] transition-all flex items-center justify-center gap-2"
           >
-            <Sliders className="h-4 w-4 text-indigo-400" />
-            <span>⚙ Advanced Engine Settings</span>
-            {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {isProcessing ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                <span>Memproses Video... ({Math.round(progress * 100)}%)</span>
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4 fill-current text-slate-300" />
+                <span>Proses Video & Ekstrak Slide</span>
+              </>
+            )}
           </button>
 
-          {showAdvanced && (
-            <div className="mt-4 p-5 bg-slate-900/90 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-              <div>
-                <div className="flex justify-between items-center font-semibold text-slate-200 mb-1">
-                  <label>Duplicate Sensitivity</label>
-                  <span className="font-mono text-indigo-400">{(duplicateThreshold * 100).toFixed(0)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.70"
-                  max="0.90"
-                  step="0.05"
-                  value={duplicateThreshold}
-                  onChange={(e) => setDuplicateThreshold(parseFloat(e.target.value))}
-                  className="w-full accent-indigo-500 cursor-pointer"
-                />
-                <p className="text-slate-400 text-[11px] mt-1">Controls how aggressively similar frames are merged into one slide.</p>
+          {/* Progress Bar */}
+          {status !== "idle" && status !== "completed" && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-slate-300 font-medium">
+                <span>{message}</span>
+                <span className="font-mono text-indigo-400 font-bold">{Math.round(progress * 100)}%</span>
               </div>
-
-              <div>
-                <div className="flex justify-between items-center font-semibold text-slate-200 mb-1">
-                  <label>Base Frame Sample Rate</label>
-                  <span className="font-mono text-indigo-400">{sampleFps} FPS</span>
-                </div>
-                <select
-                  value={sampleFps}
-                  onChange={(e) => setSampleFps(parseFloat(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-700 text-slate-200 rounded-xl p-2 focus:border-indigo-500"
-                >
-                  <option value={5.0}>5 FPS (Default - Balanced)</option>
-                  <option value={10.0}>10 FPS (High Detail)</option>
-                  <option value={15.0}>15 FPS (Rapid Slides)</option>
-                </select>
+              <div className="h-3 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-500 via-purple-400 to-indigo-400 transition-all duration-300 rounded-full"
+                  style={{ width: `${progress * 100}%` }}
+                />
               </div>
             </div>
           )}
         </div>
-      </div>
+      )}
+
+      {/* Loaded Video Session Header */}
+      {(slides.length > 0 || outputPdf) && (
+        <div className="bg-[#17171a] p-4 rounded-2xl border border-[#24242a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-10 w-10 rounded-xl bg-indigo-950/80 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+              <Video className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2 truncate">
+                <span className="truncate">{metadata?.document_name || "Video Presentation Session"}</span>
+                <span className="text-xs font-mono font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                  {slides.length} Slides Extracted
+                </span>
+              </h2>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setSlides([]);
+              setOutputPdf(null);
+              setJobId(null);
+              setStatus("idle");
+              setFile(null);
+            }}
+            className="px-3.5 py-1.5 bg-[#222228] hover:bg-[#2e2e38] text-slate-300 text-xs font-medium rounded-xl border border-[#2e2e36] flex items-center gap-1.5 transition-all shrink-0"
+          >
+            <Plus className="h-4 w-4 text-indigo-400" />
+            <span>Process Another Video</span>
+          </button>
+        </div>
+      )}
 
       {/* Completion Summary & Slide Inspector */}
       {slides.length > 0 && (
         <div className="glass-panel p-8 rounded-3xl space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-emerald-400 animate-pulse" />
-                <h3 className="text-xl font-bold text-white">
-                  Slide Review ({slides.filter((s) => s.is_selected).length} / {slides.length} Unique Slides Selected)
-                </h3>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">
-                Click any slide card to open full-screen preview with keyboard navigation (← / →).
-              </p>
+              <h3 className="text-lg font-bold text-white">
+                {slides.length} Slides
+              </h3>
             </div>
 
             <div className="flex items-center gap-3">
@@ -364,11 +374,24 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr }) => {
                 Rebuild PDF
               </button>
 
-              {outputPdf && (
+              {outputPdf && jobId && (
+                <button
+                  onClick={() => setShowPdfViewer(!showPdfViewer)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border ${
+                    showPdfViewer
+                      ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/30"
+                      : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
+                  }`}
+                >
+                  <FileText className="h-4 w-4 text-indigo-400" />
+                  {showPdfViewer ? "Hide PDF Viewer" : "View PDF"}
+                </button>
+              )}
+
+              {outputPdf && jobId && (
                 <a
-                  href={`${API_BASE}/data/processed/${jobId}_slides.pdf`}
-                  target="_blank"
-                  rel="noreferrer"
+                  href={getVideoPdfUrl(jobId, false)}
+                  download
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all"
                 >
                   <Download className="h-4 w-4" />
@@ -376,9 +399,9 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr }) => {
                 </a>
               )}
 
-              {outputPdf && onSendToOcr && (
+              {outputPdf && onSendToOcr && jobId && (
                 <button
-                  onClick={() => onSendToOcr(`${API_BASE}/data/processed/${jobId}_slides.pdf`)}
+                  onClick={() => onSendToOcr(getVideoPdfUrl(jobId, false))}
                   className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all"
                 >
                   <span>Extract Text in Tool 2</span>
@@ -387,6 +410,18 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr }) => {
               )}
             </div>
           </div>
+
+          {/* Embedded PDF Viewer Panel */}
+          {showPdfViewer && jobId && (
+            <div className="pt-2">
+              <PdfViewer
+                jobId={jobId}
+                sourceType="video"
+                title="Compiled Slide PDF Viewer"
+              />
+            </div>
+          )}
+
 
           {/* Grid of Slide Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

@@ -32,11 +32,25 @@ export interface OcrPageElement {
   nearby_text?: string[];
 }
 
+export interface OcrPageMetrics {
+  page: number;
+  detected_boxes_count: number;
+  recognized_lines_count: number;
+  avg_confidence: number;
+  min_confidence: number;
+  total_chars: number;
+  total_words: number;
+  page_coverage_pct: number;
+  processing_time_sec: number;
+}
+
 export interface OcrPage {
   page: number;
   elements: OcrPageElement[];
   visuals: any[];
+  metrics?: OcrPageMetrics;
 }
+
 
 export interface OcrJobResponse {
   job_id: string;
@@ -145,3 +159,12 @@ export async function performSearch(query: string) {
   const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`);
   return res.json();
 }
+
+export function getOcrExportUrl(jobId: string, fmt: "pdf" | "report" | "md" | "json" | "txt" | "original", inline: boolean = false): string {
+  return `${API_BASE}/api/ocr/export/${jobId}/${fmt}?inline=${inline}`;
+}
+
+export function getVideoPdfUrl(jobId: string, inline: boolean = false): string {
+  return `${API_BASE}/api/video/export/${jobId}?inline=${inline}`;
+}
+

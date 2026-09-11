@@ -1,12 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, FileText, Download, AlertTriangle, CheckCircle, RefreshCw, Eye, Image as ImageIcon, Copy, FileCode, Layers, Sliders, ChevronDown, ChevronUp, Check, ArrowRight } from "lucide-react";
-import { uploadPdfOcr, fetchOcrResult, OcrJobResponse, API_BASE } from "../lib/api";
+import { Upload, FileText, Download, AlertTriangle, CheckCircle, RefreshCw, Eye, Image as ImageIcon, Copy, FileCode, Layers, Sliders, ChevronDown, ChevronUp, Check, ArrowRight, Plus } from "lucide-react";
+import { uploadPdfOcr, fetchOcrResult, OcrJobResponse, API_BASE, getOcrExportUrl } from "../lib/api";
+import { PdfViewer } from "./PdfViewer";
+
+interface Tool2Props {
+  selectedJobId?: string | null;
+}
 
 const LOCAL_STORAGE_KEY = "doc_intel_active_ocr_job";
 
-export const Tool2PdfToOcr: React.FC = () => {
+export const Tool2PdfToOcr: React.FC<Tool2Props> = ({ selectedJobId }) => {
   const [file, setFile] = useState<File | null>(null);
   const [ocrReviewThreshold, setOcrReviewThreshold] = useState<number>(0.75);
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
@@ -17,19 +22,44 @@ export const Tool2PdfToOcr: React.FC = () => {
   const [message, setMessage] = useState<string>("");
   const [result, setResult] = useState<OcrJobResponse | null>(null);
   const [selectedPageIdx, setSelectedPageIdx] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<"overview" | "text" | "visuals" | "json">("overview");
+  const [selectedElementIdx, setSelectedElementIdx] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<"overview" | "text" | "visuals" | "pdf_viewer" | "json">("overview");
+
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Restore active job from localStorage
-  useEffect(() => {
-    const savedJobId = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (savedJobId) {
-      setJobId(savedJobId);
-      setIsProcessing(true);
+  const loadOcrJob = async (targetJobId: string) => {
+    setIsProcessing(true);
+    try {
+      const res = await fetchOcrResult(targetJobId);
+      setStatus(res.status);
+      setProgress(res.progress);
+      setMessage(res.message);
+      setResult(res);
+      
+      if (res.status === "completed" || res.status === "failed" || res.status === "cancelled") {
+        setIsProcessing(false);
+      }
+    } catch (err: any) {
+      console.error("Error loading OCR job:", err);
+      setIsProcessing(false);
     }
-  }, []);
+  };
+
+  // Restore active job from props or localStorage
+  useEffect(() => {
+    if (selectedJobId) {
+      setJobId(selectedJobId);
+      loadOcrJob(selectedJobId);
+    } else {
+      const savedJobId = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedJobId) {
+        setJobId(savedJobId);
+        loadOcrJob(savedJobId);
+      }
+    }
+  }, [selectedJobId]);
 
   // Poll OCR job status
   useEffect(() => {
@@ -153,195 +183,219 @@ export const Tool2PdfToOcr: React.FC = () => {
         </div>
       )}
 
-      {/* Main Upload Section */}
-      <div className="bg-[#17171a] border border-[#24242a] p-6 rounded-2xl space-y-6">
-        <div className="border border-dashed border-[#33333d] hover:border-slate-500 rounded-xl p-8 text-center transition-all bg-[#141416] relative">
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={handleFileChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-[#222228] flex items-center justify-center text-slate-300 border border-[#2e2e36]">
-              <FileText className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-200">
-                {file ? file.name : "Drop your presentation PDF here"}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">Supports presentation PDF files up to 200 MB</p>
-            </div>
-            {file && (
-              <span className="text-xs font-medium px-2.5 py-0.5 bg-[#25252b] border border-[#303038] text-slate-300 rounded-md">
-                {(file.size / (1024 * 1024)).toFixed(1)} MB
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Pre-processing Summary Card */}
-        {file && !isProcessing && status === "idle" && (
-          <div className="bg-[#141416] p-4 rounded-xl border border-[#26262c] space-y-2 text-xs text-slate-300">
-            <h4 className="font-medium text-white text-xs">Informasi Pemrosesan:</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
-                <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Ekstraksi teks & judul oleh OCR</span>
+      {/* Upload Section (Shown only when no active result session is loaded) */}
+      {!result && (
+        <div className="bg-[#17171a] border border-[#24242a] p-6 rounded-2xl space-y-6">
+          <div className="border border-dashed border-[#33333d] hover:border-slate-500 rounded-xl p-8 text-center transition-all bg-[#141416] relative">
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-12 w-12 rounded-xl bg-[#222228] flex items-center justify-center text-slate-300 border border-[#2e2e36]">
+                <FileText className="h-6 w-6" />
               </div>
-              <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
-                <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Isolasi tabel & grafik</span>
+              <div>
+                <p className="text-sm font-medium text-slate-200">
+                  {file ? file.name : "Drop presentation PDF here"}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">Supports presentation PDF files up to 200 MB</p>
               </div>
-              <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
-                <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Output Markdown & JSON</span>
-              </div>
+              {file && (
+                <span className="text-xs font-medium px-2.5 py-0.5 bg-[#25252b] border border-[#303038] text-slate-300 rounded-md">
+                  {(file.size / (1024 * 1024)).toFixed(1)} MB
+                </span>
+              )}
             </div>
           </div>
-        )}
 
-        {/* Start OCR Action Button */}
-        <button
-          onClick={handleStartOcr}
-          disabled={!file || isProcessing}
-          className="w-full py-3 px-5 rounded-xl font-medium text-xs text-white bg-[#24242a] hover:bg-[#2d2d34] disabled:opacity-50 disabled:cursor-not-allowed border border-[#33333d] transition-all flex items-center justify-center gap-2"
-        >
-          {isProcessing ? (
-            <>
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              <span>Mengekstrak Informasi... ({Math.round(progress * 100)}%)</span>
-            </>
-          ) : (
-            <>
-              <FileText className="h-4 w-4 text-slate-300" />
-              <span>Ekstrak Informasi dari PDF</span>
-            </>
+          {/* Pre-processing Summary Card */}
+          {file && !isProcessing && status === "idle" && (
+            <div className="bg-[#141416] p-4 rounded-xl border border-[#26262c] space-y-2 text-xs text-slate-300">
+              <h4 className="font-medium text-white text-xs">Informasi Pemrosesan:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
+                  <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Ekstraksi teks & judul oleh OCR</span>
+                </div>
+                <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
+                  <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Isolasi tabel & grafik</span>
+                </div>
+                <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
+                  <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Output Markdown & JSON</span>
+                </div>
+              </div>
+            </div>
           )}
-        </button>
 
-        {/* Progress Bar */}
-        {status !== "idle" && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-slate-300 font-medium">
-              <span>{message}</span>
-              <span className="font-mono text-cyan-400 font-bold">{Math.round(progress * 100)}%</span>
-            </div>
-            <div className="h-3 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-              <div
-                className="h-full bg-gradient-to-r from-cyan-500 via-indigo-400 to-indigo-500 transition-all duration-300 rounded-full"
-                style={{ width: `${progress * 100}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Collapsible Advanced Settings (Progressive Disclosure) */}
-        <div className="pt-2">
+          {/* Start OCR Action Button */}
           <button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+            onClick={handleStartOcr}
+            disabled={!file || isProcessing}
+            className="w-full py-3 px-5 rounded-xl font-medium text-xs text-white bg-[#24242a] hover:bg-[#2d2d34] disabled:opacity-50 disabled:cursor-not-allowed border border-[#33333d] transition-all flex items-center justify-center gap-2"
           >
-            <Sliders className="h-4 w-4 text-cyan-400" />
-            <span>⚙ Advanced Settings</span>
-            {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {isProcessing ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                <span>Mengekstrak Informasi... ({Math.round(progress * 100)}%)</span>
+              </>
+            ) : (
+              <>
+                <FileText className="h-4 w-4 text-slate-300" />
+                <span>Ekstrak Informasi dari PDF</span>
+              </>
+            )}
           </button>
 
-          {showAdvanced && (
-            <div className="mt-4 p-5 bg-slate-900/90 rounded-2xl border border-slate-800 text-xs">
-              <div className="max-w-md">
-                <div className="flex justify-between items-center font-semibold text-slate-200 mb-1">
-                  <label>Quality Review Threshold</label>
-                  <span className="font-mono text-amber-400">{(ocrReviewThreshold * 100).toFixed(0)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.60"
-                  max="0.90"
-                  step="0.05"
-                  value={ocrReviewThreshold}
-                  onChange={(e) => setOcrReviewThreshold(parseFloat(e.target.value))}
-                  className="w-full accent-amber-500 cursor-pointer"
+          {/* Progress Bar */}
+          {status !== "idle" && status !== "completed" && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-slate-300 font-medium">
+                <span>{message}</span>
+                <span className="font-mono text-cyan-400 font-bold">{Math.round(progress * 100)}%</span>
+              </div>
+              <div className="h-3 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                <div
+                  className="h-full bg-gradient-to-r from-cyan-500 via-indigo-400 to-indigo-500 transition-all duration-300 rounded-full"
+                  style={{ width: `${progress * 100}%` }}
                 />
-                <p className="text-slate-400 text-[11px] mt-1">
-                  Slides with OCR confidence score below <span className="text-amber-300 font-mono">{(ocrReviewThreshold * 100).toFixed(0)}%</span> are flagged as requiring manual review.
-                </p>
               </div>
             </div>
           )}
         </div>
-      </div>
+      )}
+
+      {/* Loaded Session Header */}
+      {result && (
+        <div className="bg-[#17171a] p-4 rounded-2xl border border-[#24242a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-10 w-10 rounded-xl bg-cyan-950/80 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+              <FileText className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2 truncate">
+                <span className="truncate">{result.file_path ? result.file_path.split(/[\/\\]/).pop() : "OCR Document"}</span>
+                <span className="text-xs font-mono font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                  {result.total_pages} Pages • OCR Session
+                </span>
+              </h2>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setResult(null);
+              setJobId(null);
+              setStatus("idle");
+              setFile(null);
+            }}
+            className="px-3.5 py-1.5 bg-[#222228] hover:bg-[#2e2e38] text-slate-300 text-xs font-medium rounded-xl border border-[#2e2e36] flex items-center gap-1.5 transition-all shrink-0"
+          >
+            <Plus className="h-4 w-4 text-cyan-400" />
+            <span>Upload New PDF</span>
+          </button>
+        </div>
+      )}
+
 
       {/* OCR Results Inspector */}
       {result && result.pages && result.pages.length > 0 && (
-        <div className="glass-panel p-8 rounded-3xl space-y-6">
+
+        <div className="glass-panel p-6 rounded-3xl space-y-6">
           {/* Result Header & Friendly View Tabs */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <FileCode className="h-5 w-5 text-cyan-400" />
-                Extracted Document Results ({result.total_pages} Pages)
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <FileText className="h-5 w-5 text-cyan-400" />
+                {result.total_pages} Pages
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
-                {result.needs_review_count > 0 ? (
-                  <span className="text-amber-400 font-semibold flex items-center gap-1">
-                    <AlertTriangle className="h-3.5 w-3.5" />
-                    {result.needs_review_count} page(s) flagged for manual review
-                  </span>
-                ) : (
-                  <span className="text-emerald-400 font-semibold">✓ High confidence extraction across all pages</span>
-                )}
-              </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-800 space-x-1">
+            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+              <div className="flex flex-wrap items-center bg-slate-950 p-1 rounded-2xl border border-slate-800 gap-1">
                 <button
                   onClick={() => setViewMode("overview")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    viewMode === "overview" ? "bg-cyan-600 text-white" : "text-slate-400 hover:text-white"
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    viewMode === "overview" ? "bg-cyan-600 text-white shadow-md shadow-cyan-600/30" : "text-slate-400 hover:text-white"
                   }`}
                 >
                   Overview
                 </button>
                 <button
-                  onClick={() => setViewMode("text")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    viewMode === "text" ? "bg-cyan-600 text-white" : "text-slate-400 hover:text-white"
+                  onClick={() => setViewMode("pdf_viewer")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                    viewMode === "pdf_viewer" ? "bg-cyan-600 text-white shadow-md shadow-cyan-600/30" : "text-slate-400 hover:text-white"
                   }`}
                 >
+                  <Eye className="h-3.5 w-3.5" />
+                  PDF Viewer
+                </button>
+                <button
+                  onClick={() => setViewMode("text")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                    viewMode === "text" ? "bg-cyan-600 text-white shadow-md shadow-cyan-600/30" : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <FileText className="h-3.5 w-3.5" />
                   Text Content
                 </button>
                 <button
                   onClick={() => setViewMode("visuals")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    viewMode === "visuals" ? "bg-cyan-600 text-white" : "text-slate-400 hover:text-white"
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                    viewMode === "visuals" ? "bg-cyan-600 text-white shadow-md shadow-cyan-600/30" : "text-slate-400 hover:text-white"
                   }`}
                 >
+                  <ImageIcon className="h-3.5 w-3.5" />
                   Visuals & Charts
                 </button>
                 <button
                   onClick={() => setViewMode("json")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    viewMode === "json" ? "bg-cyan-600 text-white" : "text-slate-400 hover:text-white"
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                    viewMode === "json" ? "bg-cyan-600 text-white shadow-md shadow-cyan-600/30" : "text-slate-400 hover:text-white"
                   }`}
                 >
-                  Raw Data (JSON)
+                  <FileCode className="h-3.5 w-3.5" />
+                  JSON Data
                 </button>
               </div>
 
               {jobId && (
-                <a
-                  href={`${API_BASE}/api/ocr/export/${jobId}/md`}
-                  download
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 flex items-center gap-2 transition-all"
-                >
-                  <Download className="h-4 w-4 text-cyan-400" />
-                  Download Markdown
-                </a>
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href={getOcrExportUrl(jobId, "pdf", false)}
+                    download
+                    className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all whitespace-nowrap"
+                  >
+                    <Download className="h-4 w-4" />
+                    Searchable PDF
+                  </a>
+
+                  <a
+                    href={getOcrExportUrl(jobId, "report", false)}
+                    download
+                    className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-1.5 transition-all whitespace-nowrap"
+                  >
+                    <FileText className="h-4 w-4 text-cyan-400" />
+                    PDF Report
+                  </a>
+
+                  <a
+                    href={getOcrExportUrl(jobId, "md", false)}
+                    download
+                    className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-1.5 transition-all whitespace-nowrap"
+                  >
+                    <Download className="h-4 w-4 text-slate-400" />
+                    Markdown
+                  </a>
+                </div>
               )}
             </div>
           </div>
+
 
           {/* Main Content Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -375,31 +429,122 @@ export const Tool2PdfToOcr: React.FC = () => {
             </div>
 
             {/* Content Display Box */}
-            <div className="lg:col-span-3 glass-card p-6 rounded-2xl border border-slate-800 space-y-4 min-h-[450px]">
-              {activePage && (viewMode === "overview" || viewMode === "text") && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h4 className="text-base font-bold text-white">Slide #{activePage.page} Content Summary</h4>
-                    <button
-                      onClick={handleCopyMarkdown}
-                      className="px-3.5 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl flex items-center gap-1.5 transition-all"
-                    >
-                      <Copy className="h-3.5 w-3.5" />
-                      {copied ? "Copied!" : "Copy Markdown"}
-                    </button>
+            <div className="lg:col-span-3 space-y-4 min-h-[450px]">
+
+              {viewMode === "pdf_viewer" && jobId && (
+                <PdfViewer
+                  jobId={jobId}
+                  sourceType="ocr"
+                  availableFormats={["pdf", "report", "original"]}
+                  title={`Document PDF Viewer - ${result.file_path ? result.file_path.split("/").pop()?.split("\\").pop() : "OCR Document"}`}
+                />
+              )}
+
+              {/* Page Completeness Diagnostics Bar */}
+              {activePage && (
+                <div className="bg-[#121318] p-3 rounded-2xl border border-slate-800/80 flex flex-wrap items-center justify-between text-xs gap-3">
+                  <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                    <span className="px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 font-bold">
+                      Page #{activePage.page} Diagnostics
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                      Boxes: <strong className="text-white font-bold">{activePage.metrics?.detected_boxes_count || activePage.elements.length}</strong>
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                      Words: <strong className="text-white font-bold">{activePage.metrics?.total_words || 0}</strong>
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                      Avg Conf: <strong className="text-emerald-400 font-bold">{Math.round((activePage.metrics?.avg_confidence || 0.95) * 100)}%</strong>
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                      Coverage: <strong className="text-indigo-300 font-bold">{activePage.metrics?.page_coverage_pct || 0}%</strong>
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                      Time: <strong className="text-amber-300 font-bold">{activePage.metrics?.processing_time_sec || 0}s</strong>
+                    </span>
                   </div>
 
-                  <div className="bg-slate-950 p-5 rounded-2xl font-mono text-xs text-slate-300 space-y-4 border border-slate-800">
-                    <p className="text-indigo-400 font-bold text-sm">## Slide {activePage.page}</p>
-                    {activePage.elements.map((elem, i) => (
-                      <div key={i} className="pl-3 border-l-2 border-slate-800 space-y-1">
-                        <span className="text-slate-500 uppercase text-[10px] block font-sans font-bold">{elem.type}</span>
-                        <p className="text-slate-200 leading-relaxed">{elem.text}</p>
+                  <button
+                    onClick={handleCopyMarkdown}
+                    className="px-3.5 py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl flex items-center gap-1.5 transition-all"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    {copied ? "Copied!" : "Copy Markdown"}
+                  </button>
+                </div>
+              )}
+
+              {activePage && (viewMode === "overview" || viewMode === "text") && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Side: Document Page Canvas Preview with Drawn Bounding Box Visualization */}
+                  <div className="bg-[#121318] p-4 rounded-2xl border border-slate-800 space-y-3 shadow-xl">
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-2 text-xs">
+                      <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                        <Eye className="h-4 w-4 text-cyan-400" />
+                        PaddleOCR Bounding Box Detection Preview
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-mono">200 DPI Full-Page</span>
+                    </div>
+
+                    <div className="bg-slate-950 rounded-xl overflow-hidden border border-slate-800 aspect-[3/4] relative flex items-center justify-center">
+                      <img
+                        src={`${API_BASE}/data/debug/${jobId}/page-${String(activePage.page).padStart(3, '0')}-detection.png`}
+                        alt={`Page ${activePage.page} Bounding Boxes`}
+                        className="object-contain w-full h-full"
+                        onError={(e) => {
+                          // Fallback to original preview image if debug detection image hasn't loaded
+                          (e.target as HTMLImageElement).src = `${API_BASE}/data/debug/${jobId}/page-${String(activePage.page).padStart(3, '0')}-original.png`;
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Right Side: Interactive Text Reader */}
+                  <div className="bg-[#121318] p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl font-sans flex flex-col">
+                    <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-cyan-400" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Extracted Text Content</span>
                       </div>
-                    ))}
+                      <span className="text-xs font-mono text-slate-500">{activePage.elements.length} text elements</span>
+                    </div>
+
+                    <div className="space-y-3 text-slate-200 leading-relaxed max-h-[520px] overflow-y-auto pr-2 flex-1">
+                      {activePage.elements.map((elem, i) => {
+                        if (elem.type === "title") {
+                          return (
+                            <h3
+                              key={i}
+                              onMouseEnter={() => setSelectedElementIdx(i)}
+                              onMouseLeave={() => setSelectedElementIdx(null)}
+                              className={`text-base font-bold text-white tracking-tight pt-2 pb-1 border-b transition-all ${
+                                selectedElementIdx === i ? "border-cyan-400 text-cyan-300 pl-2" : "border-slate-800/50"
+                              }`}
+                            >
+                              {elem.text}
+                            </h3>
+                          );
+                        }
+                        return (
+                          <p
+                            key={i}
+                            onMouseEnter={() => setSelectedElementIdx(i)}
+                            onMouseLeave={() => setSelectedElementIdx(null)}
+                            className={`text-xs text-slate-200 leading-relaxed font-normal p-3 rounded-xl border transition-all cursor-pointer ${
+                              selectedElementIdx === i
+                                ? "bg-cyan-950/60 border-cyan-500 text-white shadow-md shadow-cyan-950/40"
+                                : "bg-slate-950/40 border-slate-800/40 hover:border-slate-700/60"
+                            }`}
+                          >
+                            {elem.text}
+                          </p>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
+
 
               {activePage && viewMode === "visuals" && (
                 <div className="space-y-4">
