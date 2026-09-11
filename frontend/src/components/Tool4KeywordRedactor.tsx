@@ -23,11 +23,22 @@ interface Tool4Props {
   selectedJobId?: string | null;
 }
 
+export interface KeywordItem {
+  keyword: string;
+  label: string;
+}
+
 export const Tool4KeywordRedactor: React.FC<Tool4Props> = ({ selectedJobId }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [keywords, setKeywords] = useState<string[]>(["CONFIDENTIAL", "Project X"]);
+  const [redactionStyle, setRedactionStyle] = useState<"pure" | "acronym">("acronym");
+  const [keywords, setKeywords] = useState<KeywordItem[]>([
+    { keyword: "CONFIDENTIAL", label: "SECRET" },
+    { keyword: "Project X", label: "1" }
+  ]);
   const [keywordInput, setKeywordInput] = useState<string>("");
+  const [labelInput, setLabelInput] = useState<string>("");
   const [caseSensitive, setCaseSensitive] = useState<boolean>(false);
+  const [wholeWordOnly, setWholeWordOnly] = useState<boolean>(true);
   
   const [targetPdfPath, setTargetPdfPath] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<RedactionScanResult | null>(null);
@@ -46,36 +57,46 @@ export const Tool4KeywordRedactor: React.FC<Tool4Props> = ({ selectedJobId }) =>
   };
 
   const handleAddKeyword = () => {
-    const clean = keywordInput.trim();
-    if (clean && !keywords.includes(clean)) {
-      setKeywords([...keywords, clean]);
-      setKeywordInput("");
+    const cleanKw = keywordInput.trim();
+    const cleanLbl = labelInput.trim();
+
+    if (cleanKw) {
+      if (!keywords.some((k) => k.keyword.toLowerCase() === cleanKw.toLowerCase())) {
+        const assignedLabel = redactionStyle === "acronym" ? (cleanLbl || `${keywords.length + 1}`) : "";
+        setKeywords([...keywords, { keyword: cleanKw, label: assignedLabel }]);
+        setKeywordInput("");
+        setLabelInput("");
+      }
     }
   };
 
-  const handleRemoveKeyword = (kw: string) => {
-    setKeywords(keywords.filter((k) => k !== kw));
+  const handleRemoveKeyword = (kwToRemove: string) => {
+    setKeywords(keywords.filter((k) => k.keyword !== kwToRemove));
   };
 
   const handleScanRedactions = async () => {
     if (keywords.length === 0) {
-      setErrorMessage("Silakan masukkan minimal 1 kata kunci untuk dipindai.");
+      setErrorMessage("Please enter at least 1 keyword to scan.");
       return;
     }
     if (!file && !targetPdfPath) {
-      setErrorMessage("Silakan pilih file PDF terlebih dahulu.");
+      setErrorMessage("Please select a PDF file first.");
       return;
     }
 
     setIsScanning(true);
     setErrorMessage(null);
     try {
-      const res = await directScanRedactions(file, targetPdfPath, keywords, caseSensitive);
+      // Pass formatted list of items with labels if acronym style selected
+      const payloadKeywords = keywords.map((k) => 
+        redactionStyle === "acronym" && k.label ? `${k.keyword}:${k.label}` : k.keyword
+      );
+      const res = await directScanRedactions(file, targetPdfPath, payloadKeywords, caseSensitive, wholeWordOnly);
       setScanResult(res.scan_result);
       setTargetPdfPath(res.target_pdf);
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(err.message || "Gagal memindai kata kunci pada PDF.");
+      setErrorMessage(err.message || "Failed to scan PDF for keywords.");
     } finally {
       setIsScanning(false);
     }
@@ -86,12 +107,21 @@ export const Tool4KeywordRedactor: React.FC<Tool4Props> = ({ selectedJobId }) =>
     setIsApplying(true);
     setErrorMessage(null);
     try {
-      const res = await directApplyRedactions(targetPdfPath, scanResult.matches);
+      // Ensure matches carry the correct label based on current redactionStyle
+      const updatedMatches = scanResult.matches.map((m) => {
+        const item = keywords.find((k) => k.keyword.toLowerCase() === m.keyword.toLowerCase());
+        return {
+          ...m,
+          label: redactionStyle === "acronym" ? (m.label || (item ? item.label : "")) : ""
+        };
+      });
+
+      const res = await directApplyRedactions(targetPdfPath, updatedMatches);
       setRedactedPdfPath(res.redacted_pdf_path);
       setRedactionVerification(res.verification);
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(err.message || "Gagal me-redaksi PDF.");
+      setErrorMessage(err.message || "Failed to redact PDF.");
     } finally {
       setIsApplying(false);
     }
@@ -113,45 +143,103 @@ export const Tool4KeywordRedactor: React.FC<Tool4Props> = ({ selectedJobId }) =>
       )}
 
       {/* KEYWORD TRACKING SECTION (ALWAYS VISIBLE AT THE TOP!) */}
-      <div className="bg-[#17171a] p-6 rounded-2xl border border-[#24242a] space-y-4">
-        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-          1. Enter Keywords to Track & Redact
-        </h4>
+      <div className="bg-[#17171a] p-6 rounded-2xl border border-[#24242a] space-y-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#24242a] pb-3">
+          <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+            1. Redaction Style & Target Keywords
+          </h4>
 
+          {/* Redaction Style Selector (Pure Blackout vs Blackout + Acronym / Label) */}
+          <div className="flex items-center gap-1 bg-[#131316] p-1 rounded-xl border border-[#24242a]">
+            <button
+              type="button"
+              onClick={() => setRedactionStyle("pure")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                redactionStyle === "pure"
+                  ? "bg-[#222228] text-white font-bold border border-[#33333d]"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Pure Blackout
+            </button>
+            <button
+              type="button"
+              onClick={() => setRedactionStyle("acronym")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                redactionStyle === "acronym"
+                  ? "bg-[#222228] text-white font-bold border border-[#33333d]"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Blackout + Acronym / Label
+            </button>
+          </div>
+        </div>
+
+        {/* Input Controls */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <input
             type="text"
             value={keywordInput}
             onChange={(e) => setKeywordInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAddKeyword()}
-            placeholder="Type keyword here (e.g. John Doe, Project X, CONFIDENTIAL) and press Enter..."
+            placeholder="Keyword (e.g. AKU, CONFIDENTIAL, Project X)..."
             className="flex-1 bg-[#0b0b0d] border border-[#262630] rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-slate-400"
           />
+
+          {redactionStyle === "acronym" && (
+            <input
+              type="text"
+              value={labelInput}
+              onChange={(e) => setLabelInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddKeyword()}
+              placeholder="Acronym / Label (e.g. 1, ANON, SECRET)..."
+              className="w-full sm:w-48 bg-[#0b0b0d] border border-[#262630] rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-slate-400 font-mono"
+            />
+          )}
+
           <button
             onClick={handleAddKeyword}
-            className="px-4 py-2.5 bg-[#222228] hover:bg-[#2e2e38] text-white text-xs font-semibold rounded-xl border border-[#2e2e36] transition-all flex items-center justify-center gap-1.5"
+            className="px-4 py-2.5 bg-[#222228] hover:bg-[#2e2e38] text-white text-xs font-semibold rounded-xl border border-[#2e2e36] transition-all flex items-center justify-center gap-1.5 shrink-0"
           >
             <Plus className="h-4 w-4 text-white" />
             <span>Add Keyword</span>
           </button>
 
-          <label className="flex items-center gap-2 text-xs text-slate-300 bg-[#0b0b0d] px-3.5 py-2.5 rounded-xl border border-[#262630] cursor-pointer">
-            <input
-              type="checkbox"
-              checked={caseSensitive}
-              onChange={(e) => setCaseSensitive(e.target.checked)}
-              className="rounded bg-slate-900 border-slate-700 text-white focus:ring-0"
-            />
-            <span>Case Sensitive</span>
-          </label>
+          <div className="flex items-center gap-2 shrink-0">
+            <label className="flex items-center gap-2 text-xs text-slate-300 bg-[#0b0b0d] px-3.5 py-2.5 rounded-xl border border-[#262630] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={wholeWordOnly}
+                onChange={(e) => setWholeWordOnly(e.target.checked)}
+                className="rounded bg-slate-900 border-slate-700 text-white focus:ring-0"
+              />
+              <span>Whole Word Only</span>
+            </label>
+
+            <label className="flex items-center gap-2 text-xs text-slate-300 bg-[#0b0b0d] px-3.5 py-2.5 rounded-xl border border-[#262630] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={caseSensitive}
+                onChange={(e) => setCaseSensitive(e.target.checked)}
+                className="rounded bg-slate-900 border-slate-700 text-white focus:ring-0"
+              />
+              <span>Case Sensitive</span>
+            </label>
+          </div>
         </div>
 
         {/* Keyword Chips */}
         <div className="flex flex-wrap gap-2 pt-1">
-          {keywords.map((kw) => (
-            <span key={kw} className="px-3 py-1 bg-[#222228] border border-[#383844] text-slate-200 rounded-xl text-xs flex items-center gap-2 font-medium">
-              <span>{kw}</span>
-              <button onClick={() => handleRemoveKeyword(kw)} className="text-slate-400 hover:text-white">
+          {keywords.map((item) => (
+            <span key={item.keyword} className="px-3 py-1 bg-[#222228] border border-[#383844] text-slate-200 rounded-xl text-xs flex items-center gap-2 font-medium">
+              <span>{item.keyword}</span>
+              {redactionStyle === "acronym" && item.label && (
+                <span className="px-1.5 py-0.5 rounded bg-[#141416] text-white font-mono text-[10px] border border-[#2e2e36]">
+                  {item.label}
+                </span>
+              )}
+              <button onClick={() => handleRemoveKeyword(item.keyword)} className="text-slate-400 hover:text-white">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </span>

@@ -160,3 +160,43 @@ def test_complete_tool3_to_tool4_pipeline(tmp_path):
     assert "john doe" not in final_text.lower()
     assert "company abc" not in final_text.lower()
     assert "project x" in final_text.lower()  # Unredacted keyword preserved
+
+
+def test_subsumed_phrase_keywords(tmp_path):
+    """Tests that longer phrases (e.g. 'Aku Susu') subsume shorter contained keywords ('Aku')."""
+    pdf_path = str(tmp_path / "test_subsumed.pdf")
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((50, 100), "Dokumen PT Aku Susu dan Bapak Aku", fontsize=12)
+    doc.save(pdf_path)
+    doc.close()
+
+    keywords = [
+        {"keyword": "Aku Susu", "label": "PT A"},
+        {"keyword": "Aku", "label": "PT A"}
+    ]
+    res = scan_keywords_in_pdf(pdf_path, keywords=keywords, case_sensitive=False)
+    
+    # "Aku Susu" matches 1x, standalone "Aku" matches 1x. The "Aku" inside "Aku Susu" is subsumed!
+    assert res["total_redactions"] == 2
+    summary = {k["keyword"]: k["matches_count"] for k in res["keywords_summary"]}
+    assert summary["Aku Susu"] == 1
+    assert summary["Aku"] == 1
+
+
+def test_whole_word_boundary_matching(tmp_path):
+    """Tests that searching for 'cin' matches standalone 'cin' but NOT 'cinta'."""
+    pdf_path = str(tmp_path / "test_whole_word.pdf")
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((50, 100), "Bicara tentang cin dan cinta di sini.", fontsize=12)
+    doc.save(pdf_path)
+    doc.close()
+
+    # Whole word ON (default)
+    res_on = scan_keywords_in_pdf(pdf_path, keywords=["cin"], whole_word_only=True)
+    assert res_on["total_redactions"] == 1  # Only matches standalone 'cin'
+
+    # Whole word OFF
+    res_off = scan_keywords_in_pdf(pdf_path, keywords=["cin"], whole_word_only=False)
+    assert res_off["total_redactions"] == 2  # Matches 'cin' and prefix of 'cinta'

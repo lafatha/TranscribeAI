@@ -76,6 +76,7 @@ export interface RedactionKeywordSummary {
 export interface RedactionMatch {
   match_id: string;
   keyword: string;
+  label?: string;
   page: number;
   bbox: number[];
   snippet: string;
@@ -238,12 +239,13 @@ export async function scanRedactions(jobId: string, keywords: string[], caseSens
   return handleJsonResponse(res);
 }
 
-export async function directScanRedactions(file: File | null, filePath: string | null, keywords: string[], caseSensitive: boolean = false): Promise<{ target_pdf: string; filename: string; scan_result: RedactionScanResult }> {
+export async function directScanRedactions(file: File | null, filePath: string | null, keywords: string[], caseSensitive: boolean = false, wholeWordOnly: boolean = true): Promise<{ target_pdf: string; filename: string; scan_result: RedactionScanResult }> {
   const formData = new FormData();
   if (file) formData.append("file", file);
   if (filePath) formData.append("file_path", filePath);
   formData.append("keywords_json", JSON.stringify(keywords));
   formData.append("case_sensitive", caseSensitive.toString());
+  formData.append("whole_word_only", wholeWordOnly.toString());
 
   const res = await fetch(`${API_BASE}/api/ocr/direct-scan-redactions`, {
     method: "POST",

@@ -201,7 +201,8 @@ async def direct_scan_redactions(
     file: Optional[UploadFile] = File(None),
     file_path: Optional[str] = Form(None),
     keywords_json: str = Form("[]"),
-    case_sensitive: bool = Form(False)
+    case_sensitive: bool = Form(False),
+    whole_word_only: bool = Form(True)
 ):
     """Fast Tool 4 direct PDF keyword scanner (uses PyMuPDF text search, NO vision OCR queue required!)."""
     target_pdf = None
@@ -226,7 +227,8 @@ async def direct_scan_redactions(
     scan_result = scan_keywords_in_pdf(
         pdf_path=target_pdf,
         keywords=keywords,
-        case_sensitive=case_sensitive
+        case_sensitive=case_sensitive,
+        whole_word_only=whole_word_only
     )
 
     return {
