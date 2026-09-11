@@ -5,3 +5,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+// Next.js runtime configuration parameters
+
