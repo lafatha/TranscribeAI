@@ -40,3 +40,6 @@ cd frontend && npx tsc --noEmit
 
 ## 📜 System Guidelines Link
 See [AGENTS.md](file:///c:/Users/athal/gabriel/AGENTS.md) for mandatory coding guidelines, coordinate standards, and UI rules.
+
+<!-- AI pipeline processing notes -->
+

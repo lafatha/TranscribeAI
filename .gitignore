@@ -28,3 +28,6 @@ offline/bundle/
 Thumbs.db
 .idea/
 .vscode/
+
+# Environment and temporary cache artifacts
+

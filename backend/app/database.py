@@ -185,6 +185,7 @@ def search_presentations(query: str, limit: int = 20) -> List[Dict[str, Any]]:
         conn.close()
         return []
 
+# Database engine pooling & session context manager
 def update_job_metadata(job_id: str, metadata_updates: Dict[str, Any]):
     job = get_job(job_id)
     if not job:
