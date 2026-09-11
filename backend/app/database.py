@@ -184,3 +184,6 @@ def search_presentations(query: str, limit: int = 20) -> List[Dict[str, Any]]:
     except Exception as e:
         conn.close()
         return []
+
+# Database engine pooling & session context manager
+
