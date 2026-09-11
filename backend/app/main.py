@@ -199,3 +199,6 @@ app.include_router(search_router)
 @app.get("/api/health")
 def health_check():
     return {"status": "healthy", "offline": True}
+
+# FastAPI application entrypoint and middleware setup
+
