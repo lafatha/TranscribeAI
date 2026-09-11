@@ -163,3 +163,6 @@ npm run dev
 3. **DO NOT** clear active job results or show empty upload dropzones when a user clicks an item in the History sidebar.
 4. **DO NOT** suppress error logs or pass failing tests by dummy returns. Fix root causes empirically.
 5. **DO NOT** break existing API contracts or test suites. Always verify with `pytest` and `tsc --noEmit`.
+
+<!-- Agent execution and context guidelines -->
+
