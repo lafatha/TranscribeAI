@@ -73,3 +73,6 @@ npx tsc --noEmit
 
 ## 🤖 Instructions for AI Coding Assistants
 Refer to [AGENTS.md](file:///c:/Users/athal/gabriel/AGENTS.md) for architectural guidelines, coordinate conventions, and UI design rules.
+
+<!-- Technical documentation & architecture setup guidelines -->
+
