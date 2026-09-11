@@ -205,19 +205,19 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
       {/* Workflow Step Indicator Bar */}
       <div className="bg-[#17171a] p-3 rounded-xl border border-[#24242a]">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-xs">
-          <div className={`p-2 rounded-lg border transition-all ${activeStep === 1 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 1 ? "bg-[#1c1c20] border-[#24242a] text-emerald-400" : "bg-[#17171a] border-transparent text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 1 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 1 ? "bg-[#1c1c20] border-[#24242a] text-slate-300" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>1. Unggah Video</span>
           </div>
-          <div className={`p-2 rounded-lg border transition-all ${activeStep === 2 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 2 ? "bg-[#1c1c20] border-[#24242a] text-emerald-400" : "bg-[#17171a] border-transparent text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 2 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 2 ? "bg-[#1c1c20] border-[#24242a] text-slate-300" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>2. Analisis Video</span>
           </div>
-          <div className={`p-2 rounded-lg border transition-all ${activeStep === 3 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 3 ? "bg-[#1c1c20] border-[#24242a] text-emerald-400" : "bg-[#17171a] border-transparent text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 3 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 3 ? "bg-[#1c1c20] border-[#24242a] text-slate-300" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>3. Deteksi Slide</span>
           </div>
-          <div className={`p-2 rounded-lg border transition-all ${activeStep === 4 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 4 ? "bg-[#1c1c20] border-[#24242a] text-emerald-400" : "bg-[#17171a] border-transparent text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 4 ? "bg-[#24242a] border-[#383842] text-white font-medium" : activeStep > 4 ? "bg-[#1c1c20] border-[#24242a] text-slate-300" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>4. Buat PDF</span>
           </div>
-          <div className={`p-2 rounded-lg border transition-all ${activeStep === 5 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-medium" : "bg-[#17171a] border-transparent text-slate-500"}`}>
+          <div className={`p-2 rounded-lg border transition-all ${activeStep === 5 ? "bg-[#222228] border-[#383844] text-white font-medium" : "bg-[#17171a] border-transparent text-slate-500"}`}>
             <span>5. Selesai</span>
           </div>
         </div>
@@ -225,12 +225,12 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
 
       {/* Error Banner */}
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-center justify-between gap-3">
+        <div className="p-4 rounded-xl bg-[#222228] border border-[#383844] text-slate-200 text-sm flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0" />
+            <AlertTriangle className="h-5 w-5 text-white shrink-0" />
             <span>{errorMessage}</span>
           </div>
-          <button onClick={() => setErrorMessage(null)} className="text-xs text-rose-400 hover:text-rose-200 font-semibold">
+          <button onClick={() => setErrorMessage(null)} className="text-xs text-slate-400 hover:text-white font-semibold">
             Dismiss
           </button>
         </div>
@@ -247,8 +247,8 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
             <div className="flex flex-col items-center gap-3">
-              <div className="h-12 w-12 rounded-xl bg-[#222228] flex items-center justify-center text-slate-300 border border-[#2e2e36]">
-                <Video className="h-6 w-6" />
+              <div className="h-12 w-12 rounded-xl bg-[#222228] flex items-center justify-center text-white border border-[#2e2e36]">
+                <Video className="h-6 w-6 text-white" />
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-200">
@@ -270,15 +270,15 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
               <h4 className="font-medium text-white text-xs">Informasi Pemrosesan:</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
-                  <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <Check className="h-4 w-4 text-white shrink-0 mt-0.5" />
                   <span>Koreksi posisi miring otomatis</span>
                 </div>
                 <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
-                  <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <Check className="h-4 w-4 text-white shrink-0 mt-0.5" />
                   <span>Deteksi & hapus duplikat</span>
                 </div>
                 <div className="flex items-start gap-2 bg-[#1c1c20] p-2.5 rounded-lg border border-[#26262c]">
-                  <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <Check className="h-4 w-4 text-white shrink-0 mt-0.5" />
                   <span>Buat PDF slide bersih</span>
                 </div>
               </div>
@@ -289,16 +289,16 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
           <button
             onClick={handleStartProcessing}
             disabled={!file || isProcessing}
-            className="w-full py-3 px-5 rounded-xl font-medium text-xs text-white bg-[#24242a] hover:bg-[#2d2d34] disabled:opacity-50 disabled:cursor-not-allowed border border-[#33333d] transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 px-5 rounded-xl font-medium text-xs text-white bg-[#222228] hover:bg-[#2c2c36] disabled:opacity-50 disabled:cursor-not-allowed border border-[#33333d] transition-all flex items-center justify-center gap-2"
           >
             {isProcessing ? (
               <>
-                <RefreshCw className="h-4 w-4 animate-spin" />
+                <RefreshCw className="h-4 w-4 animate-spin text-white" />
                 <span>Memproses Video... ({Math.round(progress * 100)}%)</span>
               </>
             ) : (
               <>
-                <Play className="h-4 w-4 fill-current text-slate-300" />
+                <Play className="h-4 w-4 fill-current text-white" />
                 <span>Proses Video & Ekstrak Slide</span>
               </>
             )}
@@ -309,11 +309,11 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
             <div className="space-y-2">
               <div className="flex justify-between text-xs text-slate-300 font-medium">
                 <span>{message}</span>
-                <span className="font-mono text-indigo-400 font-bold">{Math.round(progress * 100)}%</span>
+                <span className="font-mono text-white font-bold">{Math.round(progress * 100)}%</span>
               </div>
               <div className="h-3 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-500 via-purple-400 to-indigo-400 transition-all duration-300 rounded-full"
+                  className="h-full bg-slate-300 transition-all duration-300 rounded-full"
                   style={{ width: `${progress * 100}%` }}
                 />
               </div>
@@ -326,13 +326,13 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
       {(slides.length > 0 || outputPdf) && (
         <div className="bg-[#17171a] p-4 rounded-2xl border border-[#24242a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-indigo-950/80 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-              <Video className="h-5 w-5" />
+            <div className="h-10 w-10 rounded-xl bg-[#222228] border border-[#33333d] flex items-center justify-center text-white shrink-0">
+              <Video className="h-5 w-5 text-white" />
             </div>
             <div className="min-w-0">
               <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2 truncate">
                 <span className="truncate">{metadata?.document_name || "Video Presentation Session"}</span>
-                <span className="text-xs font-mono font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                <span className="text-xs font-mono font-medium px-2.5 py-0.5 rounded-full bg-[#222228] text-slate-200 border border-[#33333d] shrink-0">
                   {slides.length} Slides Extracted
                 </span>
               </h2>
@@ -349,7 +349,7 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
             }}
             className="px-3.5 py-1.5 bg-[#222228] hover:bg-[#2e2e38] text-slate-300 text-xs font-medium rounded-xl border border-[#2e2e36] flex items-center gap-1.5 transition-all shrink-0"
           >
-            <Plus className="h-4 w-4 text-indigo-400" />
+            <Plus className="h-4 w-4 text-white" />
             <span>Process Another Video</span>
           </button>
         </div>
@@ -357,8 +357,8 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
 
       {/* Completion Summary & Slide Inspector */}
       {slides.length > 0 && (
-        <div className="glass-panel p-8 rounded-3xl space-y-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="bg-[#17171a] border border-[#24242a] p-8 rounded-3xl space-y-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-[#24242a] pb-4">
             <div>
               <h3 className="text-lg font-bold text-white">
                 {slides.length} Slides
@@ -368,9 +368,9 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
             <div className="flex items-center gap-3">
               <button
                 onClick={handleRebuildPdf}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-2 transition-all"
+                className="px-4 py-2 bg-[#222228] hover:bg-[#2c2c36] text-slate-200 text-xs font-semibold rounded-xl border border-[#33333d] flex items-center gap-2 transition-all"
               >
-                <RefreshCw className="h-4 w-4 text-indigo-400" />
+                <RefreshCw className="h-4 w-4 text-white" />
                 Rebuild PDF
               </button>
 
@@ -379,11 +379,11 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
                   onClick={() => setShowPdfViewer(!showPdfViewer)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border ${
                     showPdfViewer
-                      ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/30"
-                      : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
+                      ? "bg-[#2c2c36] border-[#444450] text-white"
+                      : "bg-[#222228] hover:bg-[#2c2c36] border-[#33333d] text-slate-200"
                   }`}
                 >
-                  <FileText className="h-4 w-4 text-indigo-400" />
+                  <FileText className="h-4 w-4 text-white" />
                   {showPdfViewer ? "Hide PDF Viewer" : "View PDF"}
                 </button>
               )}
@@ -392,7 +392,7 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
                 <a
                   href={getVideoPdfUrl(jobId, false)}
                   download
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all"
+                  className="px-4 py-2 bg-white hover:bg-slate-200 text-black text-xs font-bold rounded-xl border border-white flex items-center gap-2 transition-all"
                 >
                   <Download className="h-4 w-4" />
                   Download PDF
@@ -402,7 +402,7 @@ export const Tool1VideoToPdf: React.FC<Tool1Props> = ({ onSendToOcr, selectedJob
               {outputPdf && onSendToOcr && jobId && (
                 <button
                   onClick={() => onSendToOcr(getVideoPdfUrl(jobId, false))}
-                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all"
+                  className="px-4 py-2 bg-[#222228] hover:bg-[#2c2c36] text-white text-xs font-bold rounded-xl border border-[#33333d] flex items-center gap-2 transition-all"
                 >
                   <span>Extract Text in Tool 2</span>
                   <ArrowRight className="h-4 w-4" />

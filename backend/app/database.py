@@ -184,3 +184,13 @@ def search_presentations(query: str, limit: int = 20) -> List[Dict[str, Any]]:
     except Exception as e:
         conn.close()
         return []
+
+def update_job_metadata(job_id: str, metadata_updates: Dict[str, Any]):
+    job = get_job(job_id)
+    if not job:
+        return
+    meta = job.get("metadata_json") or {}
+    meta.update(metadata_updates)
+    job["metadata_json"] = meta
+    save_job(job)
+
