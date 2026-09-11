@@ -24,3 +24,6 @@ cd frontend
 npx tsc --noEmit
 ```
 Ensure 0 TypeScript errors.
+
+<!-- Frontend specific component and state guidelines -->
+
