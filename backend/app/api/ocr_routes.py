@@ -12,6 +12,7 @@ from app.queue_manager import queue_manager
 from app.database import get_job, update_job_metadata
 from app.module2_ocr.deduplicator import analyze_duplicate_slides, generate_unique_pdf
 from app.module2_ocr.redactor import scan_keywords_in_pdf, apply_pdf_redactions
+from app.module2_ocr.counter import analyze_pdf_keyword_counter
 
 router = APIRouter(prefix="/api/ocr", tags=["Tool 2: PDF to Structured OCR & Tool 3/4 Pipeline"])
 
@@ -381,5 +382,42 @@ async def download_file_by_path(file_path: str):
         filename=path.name,
         content_disposition_type="attachment"
     )
+
+
+@router.post("/direct-count-keywords")
+async def direct_count_keywords(
+    file: UploadFile = File(...),
+    min_frequency: int = Form(1),
+    min_word_length: int = Form(2),
+    exclude_stopwords: bool = Form(False),
+    include_phrases: bool = Form(True)
+):
+    """Counts word and phrase frequencies directly from uploaded PDF and returns semicolon-separated list."""
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Must be a valid PDF file (.pdf)")
+
+    safe_name = sanitize_filename(file.filename)
+    temp_path = UPLOAD_DIR / f"counter_temp_{safe_name}"
+
+    try:
+        with open(temp_path, "wb") as buffer:
+            while chunk := await file.read(1024 * 1024):
+                buffer.write(chunk)
+
+        res = analyze_pdf_keyword_counter(
+            pdf_path=str(temp_path),
+            min_frequency=min_frequency,
+            min_word_length=min_word_length,
+            exclude_stopwords=exclude_stopwords,
+            include_phrases=include_phrases
+        )
+        return res
+    finally:
+        if temp_path.exists():
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+
 
 

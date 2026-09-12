@@ -15,12 +15,13 @@ import {
   SlidersHorizontal,
   ChevronRight,
   Layers,
-  ShieldAlert
+  ShieldAlert,
+  Hash
 } from "lucide-react";
 import { fetchBatchJobs, BatchJob } from "../lib/api";
 
 interface DashboardHomeProps {
-  onSelectWorkflow: (workflow: "video" | "ocr" | "duplicates" | "redaction" | "search") => void;
+  onSelectWorkflow: (workflow: "video" | "ocr" | "duplicates" | "redaction" | "counter" | "search") => void;
 }
 
 export const DashboardHome: React.FC<DashboardHomeProps> = ({ onSelectWorkflow }) => {
@@ -98,6 +99,14 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({ onSelectWorkflow }
             >
               <ShieldAlert className="h-3.5 w-3.5 text-white" />
               <span>Keyword Redactor</span>
+            </button>
+
+            <button
+              onClick={() => onSelectWorkflow("counter")}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#222228] hover:bg-[#2c2c36] border border-[#33333d] text-xs font-medium text-slate-200 transition-colors"
+            >
+              <Hash className="h-3.5 w-3.5 text-white" />
+              <span>Keyword Counter</span>
             </button>
 
             <button

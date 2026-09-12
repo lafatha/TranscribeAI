@@ -307,3 +307,39 @@ export function getVideoPdfUrl(jobId: string, inline: boolean = false): string {
   return `${API_BASE}/api/video/export/${jobId}?inline=${inline}`;
 }
 
+export interface KeywordCountItem {
+  word: string;
+  count: number;
+  pages_count: number;
+  pages: number[];
+}
+
+export interface KeywordCounterResult {
+  total_words_scanned: number;
+  unique_words_count: number;
+  semicolon_formatted: string;
+  keywords: KeywordCountItem[];
+}
+
+export async function directCountKeywords(
+  file: File,
+  minFrequency: number = 1,
+  minWordLength: number = 2,
+  excludeStopwords: boolean = false,
+  includePhrases: boolean = true
+): Promise<KeywordCounterResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("min_frequency", minFrequency.toString());
+  formData.append("min_word_length", minWordLength.toString());
+  formData.append("exclude_stopwords", excludeStopwords.toString());
+  formData.append("include_phrases", includePhrases.toString());
+
+  const res = await fetch(`${API_BASE}/api/ocr/direct-count-keywords`, {
+    method: "POST",
+    body: formData,
+  });
+  return handleJsonResponse(res);
+}
+
+

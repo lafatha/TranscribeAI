@@ -7,6 +7,7 @@ import { Tool1VideoToPdf } from "../components/Tool1VideoToPdf";
 import { Tool2PdfToOcr } from "../components/Tool2PdfToOcr";
 import { Tool3DuplicateRemover } from "../components/Tool3DuplicateRemover";
 import { Tool4KeywordRedactor } from "../components/Tool4KeywordRedactor";
+import { Tool5KeywordCounter } from "../components/Tool5KeywordCounter";
 import { LocalSearch } from "../components/LocalSearch";
 import { BatchQueue } from "../components/BatchQueue";
 import { Sparkles, ShieldCheck } from "lucide-react";
@@ -38,6 +39,8 @@ export default function Home() {
         return "Tool 3 — Duplicate Slide Removal";
       case "redaction":
         return "Tool 4 — Keyword PDF Redaction";
+      case "counter":
+        return "Tool 5 — Keyword Counter & Frequency Analyzer";
       case "search":
         return "Search Presentations";
       case "batch":
@@ -73,6 +76,7 @@ export default function Home() {
           {activeTab === "ocr" && <Tool2PdfToOcr selectedJobId={selectedJobId} />}
           {activeTab === "duplicates" && <Tool3DuplicateRemover selectedJobId={selectedJobId} />}
           {activeTab === "redaction" && <Tool4KeywordRedactor selectedJobId={selectedJobId} />}
+          {activeTab === "counter" && <Tool5KeywordCounter />}
           {activeTab === "search" && <LocalSearch />}
           {activeTab === "batch" && <BatchQueue onSelectJob={handleSelectJob} />}
         </main>

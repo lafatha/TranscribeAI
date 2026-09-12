@@ -22,11 +22,12 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Layers,
-  ShieldAlert
+  ShieldAlert,
+  Hash
 } from "lucide-react";
 import { fetchBatchJobs, BatchJob } from "../lib/api";
 
-export type NavTab = "dashboard" | "video" | "ocr" | "duplicates" | "redaction" | "search" | "batch";
+export type NavTab = "dashboard" | "video" | "ocr" | "duplicates" | "redaction" | "counter" | "search" | "batch";
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -161,6 +162,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <ShieldAlert className="h-4 w-4 text-slate-300 shrink-0" />
             {!collapsed && <span>Keyword Redactor</span>}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("counter")}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+              activeTab === "counter"
+                ? "bg-[#222228] text-white font-semibold border border-[#383844]"
+                : "text-slate-400 hover:text-slate-100 hover:bg-[#1a1a20]"
+            }`}
+          >
+            <Hash className="h-4 w-4 text-slate-300 shrink-0" />
+            {!collapsed && <span>Keyword Counter</span>}
           </button>
 
           <button
